@@ -7,3 +7,7 @@ npm install @google/genai@^0.12.0 axios@^1.9.0 cobalt-api@^1.0.0 cors@^2.8.5 dot
 # Install yt-dlp using pip
 echo "Installing yt-dlp using pip..."
 pip install yt-dlp
+
+# Run rendering or other processes (example: starting a server or process)
+echo "Starting rendering process..."
+node server.js  # অথবা আপনার প্রযোজ্য স্ক্রিপ্টটি এখানে দিন
