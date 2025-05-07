@@ -1,5 +1,5 @@
 const express = require('express');
-const YTDlpWrap = require('yt-dlp-wrap').default;
+const YTDlpWrap = require('yt-dlp').default;
 const router = express.Router();
 
 // Cache yt-dlp instance globally
