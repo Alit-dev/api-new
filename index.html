@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzzy Learning Bot - Premium Admin Panel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3f37c9;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --info: #38b000;
+            --warning: #f8961e;
+            --danger: #ef233c;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --white: #ffffff;
+            --black: #000000;
+            --code-bg: #1e1e1e;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.1);
+            --shadow-xl: 0 15px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.08);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 12px;
+            --border-radius-sm: 6px;
+            --sidebar-width: 280px;
+            --header-height: 80px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            z-index: 1000;
+            animation: slideInDown 0.5s ease-out;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo-icon {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Main Container */
+        .main-container {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            margin: var(--header-height) auto 0;
+            width: 100%;
+            padding-top: 1rem;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem 1rem;
+            transition: var(--transition);
+            transform: translateX(0);
+            z-index: 900;
+            height: calc(100vh - var(--header-height));
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            overflow-y: auto;
+            animation: fadeInLeft 0.5s ease-out;
+        }
+        
+        .sidebar-collapsed {
+            transform: translateX(calc(-1 * var(--sidebar-width)));
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+            animation: fadeInLeft 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .sidebar-menu li:nth-child(1) { animation-delay: 0.1s; }
+        .sidebar-menu li:nth-child(2) { animation-delay: 0.2s; }
+        .sidebar-menu li:nth-child(3) { animation-delay: 0.3s; }
+        .sidebar-menu li:nth-child(4) { animation-delay: 0.4s; }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar-menu a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(67, 97, 238, 0.1), transparent);
+            transition: var(--transition);
+        }
+        
+        .sidebar-menu a:hover::before {
+            left: 100%;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+        
+        .sidebar-menu i {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            transition: var(--transition);
+            margin-left: var(--sidebar-width);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .main-content-expanded {
+            margin-left: 0;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out;
+            will-change: transform;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .stat-card:hover::before {
+            width: 8px;
+            background: var(--accent);
+        }
+        
+        .stat-card h3 {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-card .stat-change {
+            font-size: 0.875rem;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-card .stat-change.positive {
+            color: var(--info);
+        }
+        
+        .stat-card .stat-change.negative {
+            color: var(--danger);
+        }
+        
+        /* Sections */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            animation: fadeInUp 0.5s ease-out;
+            will-change: transform;
+        }
+        
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.3s; }
+        .section:nth-child(4) { animation-delay: 0.4s; }
+        .section:nth-child(5) { animation-delay: 0.5s; }
+        .section:nth-child(6) { animation-delay: 0.6s; }
+        
+        .section:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        h2 {
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            position: relative;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -0.75rem;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+        
+        .section:hover h2::after {
+            width: 100px;
+            background: var(--primary);
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.25rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9375rem;
+        }
+        
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group .icon {
+            position: absolute;
+            left: 1rem;
+            color: var(--gray);
+            pointer-events: none;
+            transition: var(--transition);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            padding-left: 2.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius-sm);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            background-color: var(--light);
+            will-change: transform;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background-color: var(--white);
+            transform: translateX(5px);
+        }
+        
+        input:focus + .icon {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            padding: 1rem;
+            line-height: 1.6;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            text-decoration: none;
+            gap: 0.5rem;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn-block {
+            display: flex;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: #5a189a;
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #3aa8d8;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: #d90429;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background: #e68a1a;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            font-weight: 500;
+            color: var(--gray);
+            position: relative;
+        }
+        
+        .tab:hover {
+            color: var(--primary);
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Response Area */
+        .response-section {
+            margin-top: 2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .response-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        #response {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            min-height: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+            transition: var(--transition);
+        }
+        
+        #response:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .response-placeholder {
+            color: var(--gray);
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            overflow-x: auto;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin: 0;
+            transition: var(--transition);
+        }
+        
+        pre:hover {
+            transform: translateX(5px);
+        }
+        
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--light-gray);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        /* Loading Indicators */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 0.5rem;
+        }
+        
+        .loading-dark {
+            border-top-color: var(--primary);
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: var(--success);
+            color: white;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: 400px;
+            animation: slideInRight 0.5s ease-out forwards;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+        }
+        
+        .notification.info {
+            background: var(--primary);
+        }
+        
+        .notification-icon {
+            font-size: 1.25rem;
+        }
+        
+        .notification-close {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .notification-close:hover {
+            opacity: 1;
+        }
+        
+        /* Typing Animation */
+        .typing-animation {
+            position: relative;
+        }
+        
+        .typing-animation::after {
+            content: '|';
+            position: absolute;
+            right: -0.5rem;
+            animation: blink 1s infinite;
+            color: var(--primary);
+        }
+        
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            z-index: 900;
+            transition: var(--transition);
+            animation: bounceIn 0.5s ease-out;
+            will-change: transform;
+        }
+        
+        .fab:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .fab:active {
+            transform: translateY(0) scale(0.95);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .fab {
+                bottom: 1.5rem;
+                right: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .header-content {
+                padding: 0 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .section {
+                padding: 1.25rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .logo {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .fab {
+                width: 48px;
+                height: 48px;
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            :root {
+                --sidebar-width: 260px;
+                --header-height: 70px;
+            }
+            
+            .stat-card {
+                padding: 1.25rem;
+            }
+            
+            .btn {
+                padding: 0.75rem 1rem;
+            }
+            
+            pre {
+                padding: 1rem;
+                font-size: 0.8125rem;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Utility Classes */
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        .mt-5 { margin-top: 3rem; }
+        
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+        .mb-5 { margin-bottom: 3rem; }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-muted { color: var(--gray); }
+        .text-primary { color: var(--primary); }
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
+        
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .justify-content-center { justify-content: center; }
+        
+        /* Icons (using Unicode as fallback) */
+        .icon {
+            font-style: normal;
+        }
+        
+        .icon-dashboard::before { content: "📊"; }
+        .icon-knowledge::before { content: "🧠"; }
+        .icon-analytics::before { content: "📈"; }
+        .icon-settings::before { content: "⚙️"; }
+        .icon-help::before { content: "❓"; }
+        .icon-menu::before { content: "☰"; }
+        .icon-close::before { content: "✕"; }
+        .icon-search::before { content: "🔍"; }
+        .icon-add::before { content: "➕"; }
+        .icon-delete::before { content: "🗑️"; }
+        .icon-edit::before { content: "✏️"; }
+        .icon-copy::before { content: "⎘"; }
+        .icon-download::before { content: "⤓"; }
+        .icon-success::before { content: "✓"; }
+        .icon-error::before { content: "✗"; }
+        .icon-warning::before { content: "⚠"; }
+        .icon-info::before { content: "ℹ"; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🤖</span>
+                <h1>Fuzzy Learning Bot</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline btn-sm" id="toggleSidebar">
+                    <span class="icon icon-menu"></span> <span class="menu-text">Menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav>
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active" data-tab="knowledge"><span class="icon icon-knowledge"></span> Knowledge Management</a></li>
+                    <li><a href="#" data-tab="analytics"><span class="icon icon-analytics"></span> Analytics Dashboard</a></li>
+                    <li><a href="#" data-tab="settings"><span class="icon icon-settings"></span> System Settings</a></li>
+                    <li><a href="#" data-tab="help"><span class="icon icon-help"></span> Help & Docs</a></li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Stats Section -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Questions</h3>
+                    <div class="stat-value" id="totalQuestions">0</div>
+                    <div class="stat-change positive">
+                        <span class="icon">↑</span> <span id="questionsChange">0%</span> from last week
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Answers</h3>
+                    <div class="stat-value" id="totalAnswers">0</div>
+                    <div class="stat-change positive">
+                        <span class="icon">↑</span> <span id="answersChange">0%</span> from last week
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Teachers</h3>
+                    <div class="stat-value" id="totalTeachers">0</div>
+                    <div class="stat-change positive">
+                        <span class="icon">↑</span> <span id="teachersChange">0%</span> from last week
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Knowledge Growth</h3>
+                    <div class="stat-value" id="knowledgeGrowth">0%</div>
+                    <div class="stat-change positive">
+                        <span class="icon">↑</span> <span id="growthChange">0%</span> from last week
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Knowledge Management Tab -->
+            <div class="tab-content active" id="knowledge-tab">
+                <div class="section-grid">
+                    <!-- Ask Question Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Ask a Question</h2>
+                        </div>
+                        <form id="askForm">
+                            <div class="form-group">
+                                <label for="question">Your Question</label>
+                                <div class="input-group">
+                                    <span class="icon icon-search"></span>
+                                    <input type="text" id="question" name="question" placeholder="What is artificial intelligence?" required class="typing-animation">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block">
+                                <span id="askBtnText">Ask Question</span>
+                                <span id="askBtnLoader" class="loading" style="display: none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Teach Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Teach New Knowledge</h2>
+                        </div>
+                        <form id="teachForm">
+                            <div class="form-group">
+                                <label for="teachQuestion">Question</label>
+                                <div class="input-group">
+                                    <span class="icon icon-edit"></span>
+                                    <input type="text" id="teachQuestion" name="teachQuestion" placeholder="What is AI?" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="teachAnswer">Answers (comma separated)</label>
+                                <div class="input-group">
+                                    <span class="icon icon-add"></span>
+                                    <input type="text" id="teachAnswer" name="teachAnswer" placeholder="Artificial Intelligence, Machine Intelligence" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacher">Teacher Name</label>
+                                <div class="input-group">
+                                    <span class="icon">👤</span>
+                                    <input type="text" id="teacher" name="teacher" placeholder="Your name" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <span id="teachBtnText">Teach Bot</span>
+                                <span id="teachBtnLoader" class="loading" style="display: none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Bulk Upload Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Bulk Knowledge Upload</h2>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="fixFormat()">
+                                <span class="icon icon-edit"></span> Fix Format
+                            </button>
+                        </div>
+                        <form id="bulkForm">
+                            <div class="form-group">
+                                <label for="bulkQuestions">Questions and Answers (JSON format)</label>
+                                <textarea id="bulkQuestions" name="bulkQuestions" placeholder='[{"question":"What is AI?","answers":["Artificial Intelligence"]}]'></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="bulkTeacher">Teacher Name</label>
+                                <div class="input-group">
+                                    <span class="icon">👤</span>
+                                    <input type="text" id="bulkTeacher" name="bulkTeacher" placeholder="Your name" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <span id="bulkBtnText">Bulk Upload</span>
+                                <span id="bulkBtnLoader" class="loading" style="display: none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Delete Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Delete Knowledge</h2>
+                        </div>
+                        <form id="deleteForm">
+                            <div class="form-group">
+                                <label for="delQuestion">Question</label>
+                                <div class="input-group">
+                                    <span class="icon icon-search"></span>
+                                    <input type="text" id="delQuestion" name="delQuestion" placeholder="Question to delete" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="delAnswer">Answer</label>
+                                <div class="input-group">
+                                    <span class="icon icon-delete"></span>
+                                    <input type="text" id="delAnswer" name="delAnswer" placeholder="Answer to delete" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-block">
+                                <span id="deleteBtnText">Delete</span>
+                                <span id="deleteBtnLoader" class="loading" style="display: none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Analytics Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Knowledge Analytics</h2>
+                        </div>
+                        <form id="countForm">
+                            <div class="form-group">
+                                <label for="countTeacher">Filter by Teacher (optional)</label>
+                                <div class="input-group">
+                                    <span class="icon">👤</span>
+                                    <input type="text" id="countTeacher" name="countTeacher" placeholder="Teacher name">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-secondary btn-block">
+                                <span id="countBtnText">Get Stats</span>
+                                <span id="countBtnLoader" class="loading" style="display: none;"></span>
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-secondary btn-block mt-2" id="showAllBtn">
+                            <span id="showAllBtnText">Show All Knowledge</span>
+                            <span id="showAllBtnLoader" class="loading" style="display: none;"></span>
+                        </button>
+                    </div>
+                    
+                    <!-- Teacher Data Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Teacher Knowledge</h2>
+                        </div>
+                        <form id="teacherForm">
+                            <div class="form-group">
+                                <label for="teacherName">Teacher Name</label>
+                                <div class="input-group">
+                                    <span class="icon">👤</span>
+                                    <input type="text" id="teacherName" name="teacherName" placeholder="Teacher to search" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-secondary btn-block">
+                                <span id="teacherBtnText">Search</span>
+                                <span id="teacherBtnLoader" class="loading" style="display: none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Tab -->
+            <div class="tab-content" id="analytics-tab">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Knowledge Base Analytics</h2>
+                    </div>
+                    <div id="analyticsContent">
+                        <p>Loading analytics data...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div class="tab-content" id="settings-tab">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>System Settings</h2>
+                    </div>
+                    <form id="settingsForm">
+                        <div class="form-group">
+                            <label for="apiToken">GitHub API Token</label>
+                            <input type="password" id="apiToken" name="apiToken" placeholder="Enter your GitHub token">
+                        </div>
+                        <div class="form-group">
+                            <label for="gistId">Gist ID</label>
+                            <input type="text" id="gistId" name="gistId" placeholder="Enter your Gist ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="fileName">File Name</label>
+                            <input type="text" id="fileName" name="fileName" placeholder="Enter your file name">
+                        </div>
+                        <div class="form-group">
+                            <label for="fuzzyThreshold">Fuzzy Match Threshold (0-1)</label>
+                            <input type="number" id="fuzzyThreshold" name="fuzzyThreshold" placeholder="0.6" min="0" max="1" step="0.1">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <span id="settingsBtnText">Save Settings</span>
+                            <span id="settingsBtnLoader" class="loading" style="display: none;"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Tab -->
+            <div class="tab-content" id="help-tab">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Help & Documentation</h2>
+                    </div>
+                    <div id="helpContent">
+                        <h3>Getting Started</h3>
+                        <p>Welcome to the Fuzzy Learning Bot admin panel. Here's how to use it:</p>
+                        
+                        <h4>1. Ask a Question</h4>
+                        <p>Type a question in the "Ask a Question" section to get an answer from the knowledge base.</p>
+                        
+                        <h4>2. Teach New Knowledge</h4>
+                        <p>Add new question-answer pairs to teach the bot. Provide multiple answers separated by commas.</p>
+                        
+                        <h4>3. Bulk Upload</h4>
+                        <p>Upload multiple questions and answers at once using JSON format:</p>
+                        <pre><code>[
+  {
+    "question": "What is AI?",
+    "answers": ["Artificial Intelligence"]
+  },
+  {
+    "question": "What is ML?",
+    "answers": ["Machine Learning"]
+  }
+]</code></pre>
+                        
+                        <h4>4. Delete Knowledge</h4>
+                        <p>Remove incorrect or outdated information from the knowledge base.</p>
+                        
+                        <h4>5. Analytics</h4>
+                        <p>View statistics about your knowledge base and teacher contributions.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Response Section -->
+            <div class="response-section">
+                <div class="response-header">
+                    <h2>Response</h2>
+                    <div class="response-actions">
+                        <button class="btn btn-outline btn-sm" id="copyResponse">
+                            <span class="icon icon-copy"></span> Copy
+                        </button>
+                        <button class="btn btn-outline btn-sm" id="clearResponse">
+                            <span class="icon icon-delete"></span> Clear
+                        </button>
+                    </div>
+                </div>
+                <div id="response">
+                    <div class="response-placeholder">
+                        <p>System ready. Perform an action to see results here.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Floating Action Button -->
+    <div class="fab" id="scrollToTop">
+        <span class="icon">↑</span>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span class="notification-icon icon-success"></span>
+        <span class="notification-message"></span>
+        <span class="notification-close icon-close"></span>
+    </div>
+    
+    <script>
+        // Configuration with default values
+        const config = {
+            GITHUB_TOKEN: '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',
+            GITHUB_USERNAME: 'Alit-dev',
+            GIST_ID: '1e244da3fd8790812e008afa66d5bdfc',
+            FILE_NAME: 'sara.json',
+            FUZZY_THRESHOLD: 0.6
+        };
+        
+        // Load config from localStorage if available
+        function loadConfig() {
+            const savedConfig = localStorage.getItem('fuzzyBotConfig');
+            if (savedConfig) {
+                Object.assign(config, JSON.parse(savedConfig));
+            }
+            // Update form fields
+            document.getElementById('apiToken').value = config.GITHUB_TOKEN;
+            document.getElementById('gistId').value = config.GIST_ID;
+            document.getElementById('fileName').value = config.FILE_NAME;
+            document.getElementById('fuzzyThreshold').value = config.FUZZY_THRESHOLD;
+        }
+        
+        // Save config to localStorage
+        function saveConfig() {
+            config.GITHUB_TOKEN = document.getElementById('apiToken').value;
+            config.GIST_ID = document.getElementById('gistId').value;
+            config.FILE_NAME = document.getElementById('fileName').value;
+            config.FUZZY_THRESHOLD = parseFloat(document.getElementById('fuzzyThreshold').value) || 0.6;
+            localStorage.setItem('fuzzyBotConfig', JSON.stringify(config));
+        }
+        
+        // Initialize
+        let knowledgeBaseCache = null;
+        let fuse = null;
+        let lastStats = {
+            questions: 0,
+            answers: 0,
+            teachers: 0
+        };
+        
+        // GitHub API headers
+        function getHeaders() {
+            return {
+                'Authorization': `token ${config.GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+                'User-Agent': 'FuzzyLearningBot/2.0'
+            };
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'success', duration = 3000) {
+            const notification = document.getElementById('notification');
+            const messageEl = notification.querySelector('.notification-message');
+            const iconEl = notification.querySelector('.notification-icon');
+            
+            // Set notification content
+            messageEl.textContent = message;
+            
+            // Set notification type
+            notification.className = 'notification';
+            notification.classList.add(type);
+            
+            // Update icon
+            iconEl.className = 'notification-icon';
+            if (type === 'success') iconEl.classList.add('icon-success');
+            else if (type === 'error') iconEl.classList.add('icon-error');
+            else if (type === 'warning') iconEl.classList.add('icon-warning');
+            else iconEl.classList.add('icon-info');
+            
+            // Show notification
+            notification.classList.add('show');
+            
+            // Auto-hide after duration
+            const timer = setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+            
+            // Close button handler
+            notification.querySelector('.notification-close').onclick = () => {
+                clearTimeout(timer);
+                notification.classList.remove('show');
+            };
+        }
+        
+        // Toggle button loading state
+        function toggleButtonLoading(buttonId, isLoading) {
+            const btnText = document.getElementById(`${buttonId}Text`);
+            const btnLoader = document.getElementById(`${buttonId}Loader`);
+            
+            if (isLoading) {
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'inline-block';
+            } else {
+                btnText.style.display = 'inline-block';
+                btnLoader.style.display = 'none';
+            }
+        }
+        
+        // Tab switching
+        function setupTabs() {
+            document.querySelectorAll('.sidebar-menu a').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs and content
+                    document.querySelectorAll('.sidebar-menu a').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                    
+                    // Load analytics if needed
+                    if (tabId === 'analytics') {
+                        loadAnalytics();
+                    }
+                });
+            });
+        }
+        
+        // Toggle sidebar on mobile
+        function setupSidebarToggle() {
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const menuText = document.querySelector('.menu-text');
+            
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('sidebar-open');
+                mainContent.classList.toggle('main-content-expanded');
+                
+                // Update button icon and text
+                const icon = toggleBtn.querySelector('.icon');
+                if (sidebar.classList.contains('sidebar-open')) {
+                    icon.classList.remove('icon-menu');
+                    icon.classList.add('icon-close');
+                    menuText.textContent = 'Close';
+                } else {
+                    icon.classList.remove('icon-close');
+                    icon.classList.add('icon-menu');
+                    menuText.textContent = 'Menu';
+                }
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 1200) {
+                    const isClickInsideSidebar = sidebar.contains(e.target);
+                    const isClickOnToggleBtn = toggleBtn.contains(e.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnToggleBtn && sidebar.classList.contains('sidebar-open')) {
+                        sidebar.classList.remove('sidebar-open');
+                        mainContent.classList.remove('main-content-expanded');
+                        toggleBtn.querySelector('.icon').classList.remove('icon-close');
+                        toggleBtn.querySelector('.icon').classList.add('icon-menu');
+                        menuText.textContent = 'Menu';
+                    }
+                }
+            });
+        }
+        
+        // Scroll to top button
+        function setupScrollToTop() {
+            const scrollBtn = document.getElementById('scrollToTop');
+            
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollBtn.style.opacity = '1';
+                    scrollBtn.style.visibility = 'visible';
+                } else {
+                    scrollBtn.style.opacity = '0';
+                    scrollBtn.style.visibility = 'hidden';
+                }
+            });
+            
+            scrollBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+        
+        // Copy response to clipboard
+        function setupCopyResponse() {
+            document.getElementById('copyResponse').addEventListener('click', () => {
+                const responseContent = document.getElementById('response').textContent;
+                navigator.clipboard.writeText(responseContent).then(() => {
+                    showNotification('Response copied to clipboard!');
+                }).catch(err => {
+                    showNotification('Failed to copy response', 'error');
+                    console.error('Failed to copy:', err);
+                });
+            });
+        }
+        
+        // Clear response
+        function setupClearResponse() {
+            document.getElementById('clearResponse').addEventListener('click', () => {
+                document.getElementById('response').innerHTML = `
+                    <div class="response-placeholder">
+                        <p>Response cleared. Perform an action to see results here.</p>
+                    </div>
+                `;
+                showNotification('Response cleared', 'info');
+            });
+        }
+        
+        // Fetch JSON from Gist
+        async function fetchGist() {
+            try {
+                toggleButtonLoading('askBtn', true);
+                const url = `https://api.github.com/gists/${config.GIST_ID}`;
+                const res = await fetch(url, { headers: getHeaders() });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                if (!data.files[config.FILE_NAME]) {
+                    throw new Error(`File ${config.FILE_NAME} not found in Gist ${config.GIST_ID}`);
+                }
+                
+                const content = data.files[config.FILE_NAME].content;
+                return content ? JSON.parse(content) : {};
+            } catch (error) {
+                console.error('Failed to fetch Gist:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+                return {};
+            } finally {
+                toggleButtonLoading('askBtn', false);
+            }
+        }
+        
+        // Update JSON in Gist
+        async function updateGist(updatedData) {
+            try {
+                const gistUrl = `https://api.github.com/gists/${config.GIST_ID}`;
+                const files = {
+                    [config.FILE_NAME]: {
+                        content: JSON.stringify(updatedData, null, 2)
+                    }
+                };
+                
+                const res = await fetch(gistUrl, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ files })
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                
+                knowledgeBaseCache = updatedData;
+                initFuse(updatedData);
+                showNotification('Knowledge base updated successfully!');
+                return true;
+            } catch (error) {
+                console.error('Failed to update Gist:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Initialize or get cached knowledge base
+        async function getJSON() {
+            if (knowledgeBaseCache === null) {
+                knowledgeBaseCache = await fetchGist();
+                knowledgeBaseCache = normalizeKnowledgeBase(knowledgeBaseCache);
+                initFuse(knowledgeBaseCache);
+            }
+            return knowledgeBaseCache;
+        }
+        
+        // Initialize Fuse.js for fuzzy search
+        function initFuse(knowledgeBase) {
+            const questions = Object.keys(knowledgeBase).map(question => ({ question }));
+            const options = {
+                includeScore: true,
+                threshold: config.FUZZY_THRESHOLD,
+                keys: ['question']
+            };
+            fuse = new Fuse(questions, options);
+        }
+        
+        // Normalize knowledge base keys to lowercase
+        function normalizeKnowledgeBase(kb) {
+            const normalized = {};
+            for (const [question, data] of Object.entries(kb)) {
+                const lowerQuestion = question.toLowerCase();
+                if (!normalized[lowerQuestion]) {
+                    normalized[lowerQuestion] = { answers: [], teacher: data.teacher };
+                }
+                for (const answer of data.answers) {
+                    if (!normalized[lowerQuestion].answers.includes(answer)) {
+                        normalized[lowerQuestion].answers.push(answer);
+                    }
+                }
+            }
+            return normalized;
+        }
+        
+        // Fuzzy search using Fuse.js
+        function fuzzySearch(query, knowledgeBase) {
+            if (!fuse) return null;
+            
+            const results = fuse.search(query);
+            if (results.length > 0 && results[0].score <= config.FUZZY_THRESHOLD) {
+                const bestMatch = results[0].item.question;
+                return {
+                    question: bestMatch,
+                    data: knowledgeBase[bestMatch],
+                    score: results[0].score
+                };
+            }
+            return null;
+        }
+        
+        // Fix Format button functionality
+        function fixFormat() {
+            const textarea = document.getElementById('bulkQuestions');
+            const input = textarea.value.trim();
+            
+            if (!input) {
+                textarea.value = '';
+                return;
+            }
+            
+            try {
+                // Try to parse as JSON first
+                const json = JSON.parse(input);
+                // If it succeeds, just format it nicely
+                textarea.value = JSON.stringify(json, null, 2);
+                showNotification('JSON formatted successfully!');
+                return;
+            } catch (e) {
+                // Not JSON, try to parse as text format
+            }
+            
+            const lines = input.split('\n').map(line => line.trim()).filter(line => line);
+            const questions = [];
+            
+            for (const line of lines) {
+                const parts = line.split(':').map(part => part.trim());
+                if (parts.length < 2) continue;
+                
+                const question = parts[0];
+                const answers = parts.slice(1).join(':').split(',').map(ans => ans.trim()).filter(ans => ans);
+                
+                if (question && answers.length > 0) {
+                    questions.push({ question, answers });
+                }
+            }
+            
+            if (questions.length > 0) {
+                textarea.value = JSON.stringify(questions, null, 2);
+                showNotification(`Converted ${questions.length} questions to JSON format!`);
+            } else {
+                showNotification('Could not detect valid questions format', 'warning');
+            }
+        }
+        
+        // Display formatted response
+        function displayResponse(data, title = 'Response') {
+            const responseDiv = document.getElementById('response');
+            
+            // Remove placeholder if exists
+            const placeholder = responseDiv.querySelector('.response-placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            if (typeof data === 'string') {
+                responseDiv.innerHTML = `<p>${data}</p>`;
+                return;
+            }
+            
+            let html = '';
+            
+            if (Array.isArray(data)) {
+                if (data.length === 0) {
+                    html = '<p>No results found</p>';
+                } else {
+                    html = '<div class="response-list">';
+                    data.forEach((item, index) => {
+                        html += `
+                            <div class="response-item" style="margin-bottom: 1.5rem; animation: fadeInUp 0.3s ease-out ${index * 0.1}s both;">
+                                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Item ${index + 1}</h4>
+                                <pre>${JSON.stringify(item, null, 2)}</pre>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+            } else if (data.questions) {
+                // Special handling for teacher data
+                html = `
+                    <div class="teacher-stats">
+                        <h3 style="color: var(--primary-dark); margin-bottom: 1rem; animation: fadeIn 0.3s ease-out;">${data.teacher}</h3>
+                        <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                            <div style="background: var(--light-gray); padding: 1rem; border-radius: var(--border-radius-sm); animation: fadeInLeft 0.3s ease-out;">
+                                <div style="font-size: 0.875rem; color: var(--gray);">Questions</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${data.count}</div>
+                            </div>
+                            <div style="background: var(--light-gray); padding: 1rem; border-radius: var(--border-radius-sm); animation: fadeInRight 0.3s ease-out;">
+                                <div style="font-size: 0.875rem; color: var(--gray);">Answers</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${data.questions.reduce((sum, q) => sum + q.answers.length, 0)}</div>
+                            </div>
+                        </div>
+                        <h4 style="margin-bottom: 1rem; color: var(--primary-dark); animation: fadeIn 0.3s ease-out 0.1s both;">Sample Questions</h4>
+                        <ul style="list-style-type: none;">
+                `;
+                
+                data.questions.slice(0, 5).forEach((q, i) => {
+                    html += `
+                        <li style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--light-gray); animation: fadeInUp 0.3s ease-out ${i * 0.1 + 0.2}s both;">
+                            <div style="font-weight: 500; margin-bottom: 0.5rem;">${q.question}</div>
+                            <div style="font-size: 0.875rem;">
+                                <span style="color: var(--gray);">Answers:</span> 
+                                ${q.answers.map(a => `<span style="background: var(--light-gray); padding: 0.2rem 0.4rem; border-radius: 4px; margin-right: 0.5rem;">${a}</span>`).join('')}
+                            </div>
+                        </li>
+                    `;
+                });
+                
+                if (data.questions.length > 5) {
+                    html += `<li style="color: var(--gray); font-size: 0.875rem; animation: fadeIn 0.3s ease-out 0.7s both;">+ ${data.questions.length - 5} more questions</li>`;
+                }
+                
+                html += `</ul></div>`;
+            } else {
+                html = `<pre style="animation: fadeIn 0.3s ease-out;">${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            responseDiv.innerHTML = html;
+            
+            // Smooth scroll to response
+            setTimeout(() => {
+                responseDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+        
+        // Fetch and display stats
+        async function fetchStats() {
+            try {
+                const knowledgeBase = await getJSON();
+                const questions = Object.keys(knowledgeBase).length;
+                const answers = Object.values(knowledgeBase).reduce((sum, q) => sum + q.answers.length, 0);
+                const teachers = [...new Set(Object.values(knowledgeBase).map(v => v.teacher))];
+                
+                // Calculate changes
+                const questionsChange = lastStats.questions > 0 ? 
+                    Math.round(((questions - lastStats.questions) / lastStats.questions) * 100) : 0;
+                const answersChange = lastStats.answers > 0 ? 
+                    Math.round(((answers - lastStats.answers) / lastStats.answers) * 100) : 0;
+                const teachersChange = lastStats.teachers > 0 ? 
+                    Math.round(((teachers.length - lastStats.teachers) / lastStats.teachers) * 100) : 0;
+                
+                // Update UI
+                document.getElementById('totalQuestions').textContent = questions;
+                document.getElementById('totalAnswers').textContent = answers;
+                document.getElementById('totalTeachers').textContent = teachers.length;
+                
+                document.getElementById('questionsChange').textContent = `${Math.abs(questionsChange)}%`;
+                document.getElementById('answersChange').textContent = `${Math.abs(answersChange)}%`;
+                document.getElementById('teachersChange').textContent = `${Math.abs(teachersChange)}%`;
+                
+                // Update change indicators
+                document.querySelectorAll('.stat-change').forEach(el => el.classList.remove('positive', 'negative'));
+                
+                if (questionsChange >= 0) {
+                    document.querySelector('#totalQuestions').parentElement.nextElementSibling.classList.add('positive');
+                    document.querySelector('#totalQuestions').parentElement.nextElementSibling.querySelector('.icon').textContent = '↑';
+                } else {
+                    document.querySelector('#totalQuestions').parentElement.nextElementSibling.classList.add('negative');
+                    document.querySelector('#totalQuestions').parentElement.nextElementSibling.querySelector('.icon').textContent = '↓';
+                }
+                
+                if (answersChange >= 0) {
+                    document.querySelector('#totalAnswers').parentElement.nextElementSibling.classList.add('positive');
+                    document.querySelector('#totalAnswers').parentElement.nextElementSibling.querySelector('.icon').textContent = '↑';
+                } else {
+                    document.querySelector('#totalAnswers').parentElement.nextElementSibling.classList.add('negative');
+                    document.querySelector('#totalAnswers').parentElement.nextElementSibling.querySelector('.icon').textContent = '↓';
+                }
+                
+                if (teachersChange >= 0) {
+                    document.querySelector('#totalTeachers').parentElement.nextElementSibling.classList.add('positive');
+                    document.querySelector('#totalTeachers').parentElement.nextElementSibling.querySelector('.icon').textContent = '↑';
+                } else {
+                    document.querySelector('#totalTeachers').parentElement.nextElementSibling.classList.add('negative');
+                    document.querySelector('#totalTeachers').parentElement.nextElementSibling.querySelector('.icon').textContent = '↓';
+                }
+                
+                // Calculate knowledge growth (mock for now)
+                const growth = Math.min(20, Math.max(0, Math.floor(questions / 10)));
+                const growthChange = Math.floor(Math.random() * 5) - 2; // Random change between -2 and +2
+                
+                document.getElementById('knowledgeGrowth').textContent = `${growth}%`;
+                document.getElementById('growthChange').textContent = `${Math.abs(growthChange)}%`;
+                
+                if (growthChange >= 0) {
+                    document.querySelector('#knowledgeGrowth').parentElement.nextElementSibling.classList.add('positive');
+                    document.querySelector('#knowledgeGrowth').parentElement.nextElementSibling.querySelector('.icon').textContent = '↑';
+                } else {
+                    document.querySelector('#knowledgeGrowth').parentElement.nextElementSibling.classList.add('negative');
+                    document.querySelector('#knowledgeGrowth').parentElement.nextElementSibling.querySelector('.icon').textContent = '↓';
+                }
+                
+                // Update last stats
+                lastStats = {
+                    questions,
+                    answers,
+                    teachers: teachers.length
+                };
+            } catch (err) {
+                console.error('Error loading stats:', err);
+                showNotification('Error loading statistics', 'error');
+            }
+        }
+        
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                const knowledgeBase = await getJSON();
+                const teachers = {};
+                
+                // Count questions and answers per teacher
+                Object.values(knowledgeBase).forEach(q => {
+                    if (!teachers[q.teacher]) {
+                        teachers[q.teacher] = { questions: 0, answers: 0 };
+                    }
+                    teachers[q.teacher].questions += 1;
+                    teachers[q.teacher].answers += q.answers.length;
+                });
+                
+                // Sort teachers by contribution
+                const sortedTeachers = Object.entries(teachers)
+                    .map(([name, stats]) => ({ name, ...stats }))
+                    .sort((a, b) => b.questions - a.questions);
+                
+                // Generate HTML
+                let html = '<div class="analytics-container">';
+                
+                // Top Teachers
+                html += `
+                    <h3 style="color: var(--primary-dark); margin-bottom: 1rem; animation: fadeIn 0.3s ease-out;">Top Contributors</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                `;
+                
+                sortedTeachers.slice(0, 3).forEach((teacher, i) => {
+                    html += `
+                        <div style="background: white; border-radius: var(--border-radius); padding: 1.5rem; box-shadow: var(--shadow-sm); animation: fadeInUp 0.3s ease-out ${i * 0.1}s both;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">${teacher.name}</h4>
+                            <div style="display: flex; gap: 1rem;">
+                                <div style="flex: 1; background: var(--light-gray); padding: 1rem; border-radius: var(--border-radius-sm);">
+                                    <div style="font-size: 0.875rem; color: var(--gray);">Questions</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${teacher.questions}</div>
+                                </div>
+                                <div style="flex: 1; background: var(--light-gray); padding: 1rem; border-radius: var(--border-radius-sm);">
+                                    <div style="font-size: 0.875rem; color: var(--gray);">Answers</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${teacher.answers}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                
+                // All Teachers Table
+                html += `
+                    <h3 style="color: var(--primary-dark); margin-bottom: 1rem; animation: fadeIn 0.3s ease-out 0.3s both;">All Contributors</h3>
+                    <div style="overflow-x: auto; animation: fadeIn 0.3s ease-out 0.3s both;">
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+                            <thead>
+                                <tr style="background: var(--light-gray);">
+                                    <th style="text-align: left; padding: 1rem; border-bottom: 1px solid var(--gray);">Teacher</th>
+                                    <th style="text-align: right; padding: 1rem; border-bottom: 1px solid var(--gray);">Questions</th>
+                                    <th style="text-align: right; padding: 1rem; border-bottom: 1px solid var(--gray);">Answers</th>
+                                    <th style="text-align: right; padding: 1rem; border-bottom: 1px solid var(--gray);">Contribution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                sortedTeachers.forEach((teacher, i) => {
+                    const contribution = Math.round((teacher.questions / Object.keys(knowledgeBase).length) * 100);
+                    html += `
+                        <tr style="border-bottom: 1px solid var(--light-gray); animation: fadeInUp 0.3s ease-out ${i * 0.05 + 0.4}s both;">
+                            <td style="padding: 1rem;">${teacher.name}</td>
+                            <td style="text-align: right; padding: 1rem;">${teacher.questions}</td>
+                            <td style="text-align: right; padding: 1rem;">${teacher.answers}</td>
+                            <td style="text-align: right; padding: 1rem;">
+                                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                                    <div style="width: 100px; height: 8px; background: var(--light-gray); border-radius: 4px;">
+                                        <div style="width: ${contribution}%; height: 100%; background: var(--primary); border-radius: 4px;"></div>
+                                    </div>
+                                    <span>${contribution}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                // Knowledge Growth Chart Placeholder
+                html += `
+                    <h3 style="color: var(--primary-dark); margin-bottom: 1rem; animation: fadeIn 0.3s ease-out 0.6s both;">Knowledge Growth</h3>
+                    <div style="background: white; border-radius: var(--border-radius); padding: 2rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem; text-align: center; animation: fadeIn 0.3s ease-out 0.6s both;">
+                        <div style="height: 300px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                            <div>
+                                <div style="font-size: 3rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">📈</div>
+                                <p>Knowledge growth chart would be displayed here</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                html += '</div>';
+                
+                document.getElementById('analyticsContent').innerHTML = html;
+                showNotification('Analytics data loaded successfully');
+            } catch (err) {
+                console.error('Error loading analytics:', err);
+                document.getElementById('analyticsContent').innerHTML = `
+                    <div style="background: var(--light-gray); padding: 2rem; border-radius: var(--border-radius); text-align: center; animation: fadeIn 0.3s ease-out;">
+                        <p style="color: var(--danger);">Error loading analytics data</p>
+                    </div>
+                `;
+                showNotification('Error loading analytics data', 'error');
+            }
+        }
+        
+        // Form handlers
+        async function handleAskForm(formData) {
+            const question = formData.get('question').trim();
+            if (!question) {
+                throw new Error('Please enter a question');
+            }
+            
+            const knowledgeBase = await getJSON();
+            const result = fuzzySearch(question, knowledgeBase);
+            
+            if (result) {
+                const randomAnswer = result.data.answers[Math.floor(Math.random() * result.data.answers.length)];
+                return {
+                    question: result.question,
+                    answer: randomAnswer,
+                    teacher: result.data.teacher,
+                    confidence: (1 - result.score).toFixed(2),
+                    matchType: 'fuzzy'
+                };
+            }
+            
+            throw new Error('No matching answer found in knowledge base');
+        }
+        
+        async function handleTeachForm(formData) {
+            const question = formData.get('teachQuestion').trim();
+            const answers = formData.get('teachAnswer').split(',').map(a => a.trim()).filter(a => a);
+            const teacher = formData.get('teacher').trim();
+            
+            if (!question || answers.length === 0 || !teacher) {
+                throw new Error('Please fill all fields with valid data');
+            }
+            
+            const knowledgeBase = await getJSON();
+            const normalizedQuestion = question.toLowerCase();
+            
+            if (!knowledgeBase[normalizedQuestion]) {
+                knowledgeBase[normalizedQuestion] = { answers: [], teacher };
+            }
+            
+            const newAnswers = [];
+            for (const answer of answers) {
+                if (!knowledgeBase[normalizedQuestion].answers.includes(answer)) {
+                    knowledgeBase[normalizedQuestion].answers.push(answer);
+                    newAnswers.push(answer);
+                }
+            }
+            
+            if (newAnswers.length === 0) {
+                return {
+                    message: 'All answers already exist for this question',
+                    question: normalizedQuestion,
+                    existingAnswers: knowledgeBase[normalizedQuestion].answers,
+                    teacher
+                };
+            }
+            
+            await updateGist(knowledgeBase);
+            return {
+                message: 'Successfully taught new knowledge!',
+                question: normalizedQuestion,
+                newAnswers,
+                teacher,
+                totalAnswers: knowledgeBase[normalizedQuestion].answers.length
+            };
+        }
+        
+        async function handleBulkForm(formData) {
+            let questions;
+            try {
+                questions = JSON.parse(formData.get('bulkQuestions'));
+            } catch (err) {
+                throw new Error('Invalid JSON format in bulk questions');
+            }
+            
+            const teacher = formData.get('bulkTeacher').trim();
+            if (!teacher || !Array.isArray(questions)) {
+                throw new Error('Teacher name and valid questions array required');
+            }
+            
+            const knowledgeBase = await getJSON();
+            let addedCount = 0;
+            let skippedCount = 0;
+            const results = [];
+            
+            for (const qa of questions) {
+                const { question, answers } = qa;
+                if (!question || !answers || !Array.isArray(answers) || answers.length === 0) {
+                    skippedCount++;
+                    continue;
+                }
+                
+                const normalizedQuestion = question.toLowerCase();
+                if (!knowledgeBase[normalizedQuestion]) {
+                    knowledgeBase[normalizedQuestion] = { answers: [], teacher };
+                }
+                
+                const newAnswers = [];
+                for (const answer of answers) {
+                    if (!knowledgeBase[normalizedQuestion].answers.includes(answer)) {
+                        knowledgeBase[normalizedQuestion].answers.push(answer);
+                        newAnswers.push(answer);
+                    }
+                }
+                
+                if (newAnswers.length > 0) {
+                    addedCount++;
+                    results.push({
+                        question: normalizedQuestion,
+                        newAnswers,
+                        totalAnswers: knowledgeBase[normalizedQuestion].answers.length
+                    });
+                } else {
+                    skippedCount++;
+                }
+            }
+            
+            if (addedCount > 0) {
+                await updateGist(knowledgeBase);
+            }
+            
+            return {
+                message: 'Bulk teach completed',
+                teacher,
+                addedQuestions: addedCount,
+                skippedQuestions: skippedCount,
+                results: results.slice(0, 5) // Limit results for display
+            };
+        }
+        
+        async function handleDeleteForm(formData) {
+            const question = formData.get('delQuestion').trim();
+            const answer = formData.get('delAnswer').trim();
+            
+            if (!question || !answer) {
+                throw new Error('Both question and answer are required');
+            }
+            
+            const knowledgeBase = await getJSON();
+            const normalizedQuestion = question.toLowerCase();
+            
+            if (knowledgeBase[normalizedQuestion]) {
+                const initialCount = knowledgeBase[normalizedQuestion].answers.length;
+                knowledgeBase[normalizedQuestion].answers = knowledgeBase[normalizedQuestion].answers.filter(a => a !== answer);
+                
+                if (knowledgeBase[normalizedQuestion].answers.length === 0) {
+                    delete knowledgeBase[normalizedQuestion];
+                    await updateGist(knowledgeBase);
+                    return {
+                        message: 'Question and all answers deleted',
+                        question: normalizedQuestion,
+                        deletedAnswer: answer
+                    };
+                }
+                
+                if (knowledgeBase[normalizedQuestion].answers.length < initialCount) {
+                    await updateGist(knowledgeBase);
+                    return {
+                        message: 'Answer deleted successfully',
+                        question: normalizedQuestion,
+                        deletedAnswer: answer,
+                        remainingAnswers: knowledgeBase[normalizedQuestion].answers
+                    };
+                }
+                
+                return {
+                    message: 'Answer not found',
+                    question: normalizedQuestion,
+                    existingAnswers: knowledgeBase[normalizedQuestion].answers
+                };
+            }
+            
+            throw new Error('Question not found in knowledge base');
+        }
+        
+        async function handleCountForm(formData) {
+            const teacher = formData.get('countTeacher').trim();
+            const knowledgeBase = await getJSON();
+            
+            if (teacher) {
+                let questions = 0;
+                let answers = 0;
+                const teacherQuestions = [];
+                
+                for (const [q, data] of Object.entries(knowledgeBase)) {
+                    if (data.teacher === teacher) {
+                        questions += 1;
+                        answers += data.answers.length;
+                        teacherQuestions.push({
+                            question: q,
+                            answers: data.answers,
+                            teacher: data.teacher
+                        });
+                    }
+                }
+                
+                if (questions === 0) {
+                    throw new Error(`No questions found for teacher ${teacher}`);
+                }
+                
+                return {
+                    teacher,
+                    questions,
+                    answers,
+                    sampleQuestions: teacherQuestions.slice(0, 3)
+                };
+            }
+            
+            return {
+                totalQuestions: Object.keys(knowledgeBase).length,
+                totalAnswers: Object.values(knowledgeBase).reduce((sum, q) => sum + q.answers.length, 0),
+                uniqueTeachers: [...new Set(Object.values(knowledgeBase).map(v => v.teacher))].length
+            };
+        }
+        
+        async function handleShowAll() {
+            const knowledgeBase = await getJSON();
+            const questions = Object.entries(knowledgeBase).map(([question, data]) => ({
+                question,
+                answers: data.answers,
+                teacher: data.teacher
+            }));
+            
+            return {
+                count: questions.length,
+                questions: questions.slice(0, 50) // Limit to first 50 for performance
+            };
+        }
+        
+        async function handleTeacherForm(formData) {
+            const teacherName = formData.get('teacherName').trim();
+            if (!teacherName) {
+                throw new Error('Teacher name not provided');
+            }
+            
+            const knowledgeBase = await getJSON();
+            const questions = Object.entries(knowledgeBase)
+                .filter(([, data]) => data.teacher === teacherName)
+                .map(([question, data]) => ({
+                    question,
+                    answers: data.answers,
+                    teacher: data.teacher
+                }));
+            
+            if (questions.length === 0) {
+                throw new Error(`No questions found for teacher ${teacherName}`);
+            }
+            
+            return {
+                teacher: teacherName,
+                count: questions.length,
+                questions
+            };
+        }
+        
+        async function handleSettingsForm(formData) {
+            saveConfig();
+            showNotification('Settings saved successfully!');
+            return { message: 'Settings updated', config };
+        }
+        
+        // Initialize form submissions
+        function initForm(formId, handler, btnId) {
+            const form = document.getElementById(formId);
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                
+                try {
+                    toggleButtonLoading(btnId, true);
+                    const data = await handler(formData);
+                    displayResponse(data);
+                } catch (err) {
+                    displayResponse(err.message, 'Error');
+                    showNotification(err.message, 'error');
+                } finally {
+                    toggleButtonLoading(btnId, false);
+                    fetchStats();
+                }
+            });
+        }
+        
+        // Initialize all forms
+        function initForms() {
+            initForm('askForm', handleAskForm, 'askBtn');
+            initForm('teachForm', handleTeachForm, 'teachBtn');
+            initForm('bulkForm', handleBulkForm, 'bulkBtn');
+            initForm('deleteForm', handleDeleteForm, 'deleteBtn');
+            initForm('countForm', handleCountForm, 'countBtn');
+            initForm('teacherForm', handleTeacherForm, 'teacherBtn');
+            initForm('settingsForm', handleSettingsForm, 'settingsBtn');
+            
+            // Show all button (not a form)
+            document.getElementById('showAllBtn').addEventListener('click', async () => {
+                try {
+                    toggleButtonLoading('showAllBtn', true);
+                    const data = await handleShowAll();
+                    displayResponse(data, 'All Knowledge (First 50)');
+                } catch (err) {
+                    displayResponse(err.message, 'Error');
+                    showNotification(err.message, 'error');
+                } finally {
+                    toggleButtonLoading('showAllBtn', false);
+                }
+            });
+        }
+        
+        // Add typing animation to input fields
+        function setupTypingAnimations() {
+            const inputs = document.querySelectorAll('input[type="text"], textarea');
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.classList.add('typing-animation');
+                });
+                
+                input.addEventListener('blur', () => {
+                    input.classList.remove('typing-animation');
+                });
+            });
+        }
+        
+        // Add ripple effect to buttons
+        function setupRippleEffects() {
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('.btn');
+                if (!target) return;
+                
+                const rect = target.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                ripple.classList.add('ripple-effect');
+                
+                target.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 1000);
+            });
+        }
+        
+        // Initialize the app
+        function init() {
+            loadConfig();
+            setupTabs();
+            setupSidebarToggle();
+            setupScrollToTop();
+            setupCopyResponse();
+            setupClearResponse();
+            initForms();
+            fetchStats();
+            setupTypingAnimations();
+            setupRippleEffects();
+            
+            // Add animation to logo on hover
+            const logoIcon = document.querySelector('.logo-icon');
+            logoIcon.addEventListener('mouseenter', () => {
+                logoIcon.style.animation = 'float 2s ease-in-out infinite';
+            });
+            logoIcon.addEventListener('mouseleave', () => {
+                logoIcon.style.animation = 'pulse 2s infinite';
+            });
+        }
+        
+        // Start the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

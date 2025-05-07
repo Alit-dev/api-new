@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzzy Learning Bot - Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuzzy@0.1.0/lib/fuzzy.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #5e7bf1;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --success-dark: #3aa8d8;
+            --danger: #f72585;
+            --danger-light: #f9499e;
+            --warning: #f8961e;
+            --warning-light: #f9a742;
+            --info: #4895ef;
+            --info-dark: #3a7fd8;
+            --light: #f8f9fa;
+            --light-dark: #e9ecef;
+            --dark: #212529;
+            --dark-light: #343a40;
+            --gray: #6c757d;
+            --gray-light: #adb5bd;
+            --white: #ffffff;
+            --background: #f5f7fa;
+            --sidebar-bg: #ffffff;
+            --text-color: #212529;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary: #5e7bf1;
+            --secondary: #4f46e5;
+            --success: #4cc9f0;
+            --danger: #f9499e;
+            --warning: #f9a742;
+            --info: #5da8ff;
+            --light: #2c2c2c;
+            --light-dark: #3d3d3d;
+            --dark: #f8f9fa;
+            --dark-light: #e9ecef;
+            --gray: #b0b0b0;
+            --gray-light: #d1d1d1;
+            --white: #1a1a1a;
+            --white-light: #2c2c2c;
+            --background: #121212;
+            --sidebar-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --shadow: 0 5px 15px rgba(255, 255, 255, 0.05);
+            --shadow-lg: 0 10px 25px rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            background: var(--sidebar-bg);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-menu-item {
+            transition: var(--transition);
+            border-radius: 0.5rem;
+        }
+
+        .sidebar-menu-item:hover {
+            background: var(--primary);
+            color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu-item.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .theme-toggle {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg) scale(1.1);
+        }
+
+        .card, .form-container, .chart-container, .activity-log, .system-monitoring, .contributor-card {
+            background: var(--white);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-radius: 0.75rem;
+        }
+
+        .card:hover, .form-container:hover, .chart-container:hover, .activity-log:hover, .system-monitoring:hover, .contributor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: var(--white);
+            border-radius: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            transform: rotate(45deg);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover::before {
+            transform: rotate(45deg) translate(20%, 20%);
+        }
+
+        .btn {
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .floating-btn {
+            background-color: var(--primary);
+            color: var(--white);
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .floating-btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .toast {
+            background-color: var(--dark);
+            color: var(--white);
+            box-shadow: var(--shadow-lg);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toast i {
+            font-size: 1.25rem;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(67, 97, 238, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .animate-up { animation: fadeInUp 0.5s ease forwards; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+        }
+
+        .header-anim {
+            position: relative;
+            display: inline-block;
+        }
+        .header-anim::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--success));
+            transition: width 0.5s ease;
+        }
+        .header-anim:hover::after {
+            width: 100%;
+        }
+
+        input, textarea, select {
+            background: var(--white);
+            color: var(--text-color);
+            border: 1px solid var(--gray-light);
+            transition: var(--transition);
+            border-radius: 0.5rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: var(--text-color);
+        }
+
+        .result-container {
+            background: var(--white);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .result-container:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .activity-row {
+            transition: var(--transition);
+            border-bottom: 1px solid var(--light-dark);
+        }
+
+        .activity-row:last-child {
+            border-bottom: none;
+        }
+
+        .activity-row:hover {
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .contributor-avatar {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            transition: var(--transition);
+        }
+
+        .contributor-card:hover .contributor-avatar {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 5px rgba(67, 97, 238, 0.3);
+        }
+
+        .progress-bar {
+            height: 0.5rem;
+            background: var(--light-dark);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--success));
+            border-radius: 1rem;
+            transition: width 1s ease;
+        }
+
+        .robot-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80%;
+                max-width: 250px;
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+            .stat-card, .card, .form-container, .chart-container {
+                padding: 1rem;
+            }
+            .text-4xl {
+                font-size: 2rem;
+            }
+            .text-2xl {
+                font-size: 1.5rem;
+            }
+            .floating-btn {
+                bottom: 1.5rem;
+                right: 1.5rem;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="flex min-h-screen">
+        <div id="sidebar" class="sidebar w-64 h-screen fixed top-0 left-0 p-5 overflow-y-auto lg:static lg:transform-none hidden lg:block">
+            <div class="flex items-center gap-3 mb-8">
+                <i class="fas fa-robot robot-icon"></i>
+                <h2 class="text-2xl font-bold text-[var(--primary)] bg-gradient-to-r from-[var(--primary)] to-[var(--success)] bg-clip-text text-transparent">
+                    Fuzzy Learning Bot
+                </h2>
+            </div>
+            <ul class="space-y-2">
+                <li><a href="#dashboard" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-tachometer-alt mr-3 w-5 text-center"></i> Dashboard</a></li>
+                <li><a href="#analytics" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-chart-line mr-3 w-5 text-center"></i> Analytics</a></li>
+                <li><a href="#monitoring" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-desktop mr-3 w-5 text-center"></i> System Monitoring</a></li>
+                <li><a href="#ask" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-question-circle mr-3 w-5 text-center"></i> Ask Question</a></li>
+                <li><a href="#teach" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-book-open mr-3 w-5 text-center"></i> Teach Answer</a></li>
+                <li><a href="#bulk" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-boxes mr-3 w-5 text-center"></i> Bulk Teach</a></li>
+                <li><a href="#delete" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-trash-alt mr-3 w-5 text-center"></i> Delete Answer</a></li>
+                <li><a href="#stats" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-clipboard-list mr-3 w-5 text-center"></i> Statistics</a></li>
+                <li><a href="#data" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-database mr-3 w-5 text-center"></i> All Data</a></li>
+                <li><a href="#teacher" class="sidebar-menu-item flex items-center p-3"><i class="fas fa-chalkboard-teacher mr-3 w-5 text-center"></i> Teacher Data</a></li>
+            </ul>
+            <div id="themeToggle" class="theme-toggle fixed bottom-5 left-5 w-12 h-12 flex items-center justify-center rounded-full cursor-pointer shadow-lg">
+                <i class="fas fa-moon"></i>
+            </div>
+        </div>
+
+        <div class="main-content flex-1 p-5 lg:ml-64">
+            <header class="text-center mb-10 animate__animated animate__fadeInDown">
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--success)] bg-clip-text text-transparent header-anim">
+                    Fuzzy Learning Bot
+                </h1>
+                <p class="text-[var(--gray)] mt-2">Advanced Analytics & Admin Dashboard</p>
+            </header>
+
+            <section id="dashboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div class="stat-card p-6 rounded-xl text-center animate-up">
+                    <div class="relative z-10">
+                        <div class="flex justify-center mb-3">
+                            <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                                <i class="fas fa-question text-xl text-white"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Total Questions</h3>
+                        <div id="totalQuestions" class="text-3xl font-bold">0</div>
+                        <div id="questionsChange" class="text-sm mt-2 flex items-center justify-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 0% <span>from last week</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card p-6 rounded-xl text-center animate-up delay-1">
+                    <div class="relative z-10">
+                        <div class="flex justify-center mb-3">
+                            <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                                <i class="fas fa-comment-dots text-xl text-white"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Total Answers</h3>
+                        <div id="totalAnswers" class="text-3xl font-bold">0</div>
+                        <div id="answersChange" class="text-sm mt-2 flex items-center justify-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 0% <span>from last week</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card p-6 rounded-xl text-center animate-up delay-2">
+                    <div class="relative z-10">
+                        <div class="flex justify-center mb-3">
+                            <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                                <i class="fas fa-users text-xl text-white"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Active Teachers</h3>
+                        <div id="totalTeachers" class="text-3xl font-bold">0</div>
+                        <div id="teachersChange" class="text-sm mt-2 flex items-center justify-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 0% <span>from last week</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card p-6 rounded-xl text-center animate-up delay-3">
+                    <div class="relative z-10">
+                        <div class="flex justify-center mb-3">
+                            <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                                <i class="fas fa-brain text-xl text-white"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Knowledge Growth</h3>
+                        <div id="knowledgeGrowth" class="text-3xl font-bold">0%</div>
+                        <div id="growthChange" class="text-sm mt-2 flex items-center justify-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 0% <span>from last week</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="analytics" class="mb-10">
+                <h2 class="text-2xl font-semibold text-[var(--primary)] mb-5 border-b-2 border-[var(--light)] pb-2">Knowledge Base Analytics</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="chart-container p-6 rounded-xl animate-up">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Contribution Over Time</h3>
+                            <div class="flex gap-2">
+                                <button class="text-xs bg-[var(--light)] p-1 px-2 rounded" onclick="updateChartTimeframe('week')">Week</button>
+                                <button class="text-xs bg-[var(--light)] p-1 px-2 rounded" onclick="updateChartTimeframe('month')">Month</button>
+                                <button class="text-xs bg-[var(--primary)] text-white p-1 px-2 rounded" onclick="updateChartTimeframe('year')">Year</button>
+                            </div>
+                        </div>
+                        <canvas id="contributionChart" height="300"></canvas>
+                    </div>
+                    <div class="chart-container p-6 rounded-xl animate-up delay-1">
+                        <h3 class="text-lg font-semibold mb-4">Answer Distribution</h3>
+                        <canvas id="answerDistributionChart" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="contributor-section animate-up delay-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Top Contributors</h3>
+                        <div class="text-sm text-[var(--gray)]">Showing top 5 contributors</div>
+                    </div>
+                    <div id="topContributors" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+                </div>
+            </section>
+
+            <section id="monitoring" class="system-monitoring p-6 rounded-xl mb-10 animate-up delay-3">
+                <h2 class="text-2xl font-semibold text-[var(--primary)] mb-5 border-b-2 border-[var(--light)] pb-2">System Monitoring</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="card p-6 rounded-xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-[var(--primary)] bg-opacity-10 flex items-center justify-center">
+                                <i class="fas fa-bolt text-[var(--primary)]"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">API Response Time</h3>
+                                <div id="apiResponseTime" class="text-2xl font-bold">0 ms</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-3">
+                            <div id="apiResponseBar" class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="card p-6 rounded-xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-[var(--success)] bg-opacity-10 flex items-center justify-center">
+                                <i class="fas fa-database text-[var(--success)]"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Cache Hit Rate</h3>
+                                <div id="cacheHitRate" class="text-2xl font-bold">0%</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-3">
+                            <div id="cacheHitBar" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="card p-6 rounded-xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-[var(--warning)] bg-opacity-10 flex items-center justify-center">
+                                <i class="fas fa-sync-alt text-[var(--warning)]"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Data Update Frequency</h3>
+                                <div id="gistUpdateFreq" class="text-2xl font-bold">0/day</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-3">
+                            <div id="updateFreqBar" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="card p-6 rounded-xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-[var(--info)] bg-opacity-10 flex items-center justify-center">
+                                <i class="fas fa-server text-[var(--info)]"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">System Uptime</h3>
+                                <div id="systemUptime" class="text-2xl font-bold">100%</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-3">
+                            <div id="uptimeBar" class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="activity-log p-6 rounded-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Recent Activity</h3>
+                        <button class="text-sm text-[var(--primary)] hover:underline" onclick="refreshActivityLog()">
+                            <i class="fas fa-sync-alt mr-1"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="activityLog" class="w-full text-left">
+                            <thead>
+                                <tr class="bg-[var(--light)]">
+                                    <th class="p-3">Action</th>
+                                    <th class="p-3">User</th>
+                                    <th class="p-3">Timestamp</th>
+                                    <th class="p-3">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div id="ask" class="form-container p-6 rounded-xl animate-up delay-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Ask a Question</h2>
+                        <span class="badge bg-[var(--info)] text-white">
+                            <i class="fas fa-bolt"></i> Quick Query
+                        </span>
+                    </div>
+                    <form id="askForm" class="space-y-4">
+                        <div>
+                            <label for="question" class="form-label">Enter your question:</label>
+                            <input type="text" id="question" name="question" placeholder="What is AI?" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <button type="submit" class="btn w-full bg-[var(--success)] text-white p-3 rounded-lg hover:bg-[var(--success-dark)] transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-question"></i> Ask Question
+                        </button>
+                    </form>
+                    <div id="askResult" class="mt-6"></div>
+                </div>
+
+                <div id="teach" class="form-container p-6 rounded-xl animate-up delay-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Teach New Answer</h2>
+                        <span class="badge bg-[var(--success)] text-white">
+                            <i class="fas fa-graduation-cap"></i> Knowledge
+                        </span>
+                    </div>
+                    <form id="teachForm" class="space-y-4">
+                        <div>
+                            <label for="teachQuestion" class="form-label">Question:</label>
+                            <input type="text" id="teachQuestion" name="teachQuestion" placeholder="What is machine learning?" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <div>
+                            <label for="teachAnswer" class="form-label">Answer(s):</label>
+                            <input type="text" id="teachAnswer" name="teachAnswer" placeholder="ML is..., Machine Learning is..." required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                            <small class="text-[var(--gray)]">Separate multiple answers with commas</small>
+                        </div>
+                        <div>
+                            <label for="teacher" class="form-label">Your Name (Teacher):</label>
+                            <input type="text" id="teacher" name="teacher" placeholder="Your name" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <button type="submit" class="btn w-full bg-[var(--primary)] text-white p-3 rounded-lg hover:bg-[var(--primary-light)] transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-book"></i> Teach Answer
+                        </button>
+                    </form>
+                    <div id="teachResult" class="mt-6"></div>
+                </div>
+
+                <div id="bulk" class="form-container p-6 rounded-xl animate-up">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Bulk Teach</h2>
+                        <span class="badge bg-[var(--warning)] text-white">
+                            <i class="fas fa-cogs"></i> Advanced
+                        </span>
+                    </div>
+                    <form id="bulkForm" class="space-y-4">
+                        <div>
+                            <label for="bulkQuestions" class="form-label">Questions and Answers:</label>
+                            <div class="flex justify-between items-center mb-1">
+                                <small class="text-[var(--gray)]">Format: question:answer or question:ans1,ans2</small>
+                                <button type="button" onclick="toggleFormat()" class="text-sm bg-[var(--gray)] text-white px-3 py-1 rounded hover:bg-[var(--gray-light)] transition-colors flex items-center gap-1">
+                                    <i class="fas fa-exchange-alt"></i> Toggle Format
+                                </button>
+                            </div>
+                            <textarea id="bulkQuestions" name="bulkQuestions" placeholder="What is AI?:Artificial Intelligence\nWhat is ML?:Machine Learning,Deep Learning" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)] min-h-[120px]"></textarea>
+                        </div>
+                        <div>
+                            <label for="bulkTeacher" class="form-label">Your Name (Teacher):</label>
+                            <input type="text" id="bulkTeacher" name="bulkTeacher" placeholder="Your name" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <button type="submit" class="btn w-full bg-[var(--warning)] text-white p-3 rounded-lg hover:bg-[var(--warning-light)] transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-upload"></i> Bulk Teach
+                        </button>
+                    </form>
+                    <div id="bulkResult" class="mt-6"></div>
+                </div>
+
+                <div id="delete" class="form-container p-6 rounded-xl animate-up delay-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Delete Answer</h2>
+                        <span class="badge bg-[var(--danger)] text-white">
+                            <i class="fas fa-exclamation-triangle"></i> Caution
+                        </span>
+                    </div>
+                    <form id="deleteForm" class="space-y-4">
+                        <div>
+                            <label for="delQuestion" class="form-label">Question:</label>
+                            <input type="text" id="delQuestion" name="delQuestion" placeholder="Exact question to delete" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <div>
+                            <label for="delAnswer" class="form-label">Answer:</label>
+                            <input type="text" id="delAnswer" name="delAnswer" placeholder="Exact answer to delete" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <button type="submit" class="btn w-full bg-[var(--danger)] text-white p-3 rounded-lg hover:bg-[var(--danger-light)] transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-trash-alt"></i> Delete Answer
+                        </button>
+                    </form>
+                    <div id="deleteResult" class="mt-6"></div>
+                </div>
+
+                <div id="stats" class="form-container p-6 rounded-xl animate-up delay-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">View Statistics</h2>
+                        <span class="badge bg-[var(--info)] text-white">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </span>
+                    </div>
+                    <form id="countForm" class="space-y-4">
+                        <div>
+                            <label for="countTeacher" class="form-label">Filter by Teacher (optional):</label>
+                            <input type="text" id="countTeacher" name="countTeacher" placeholder="Teacher name" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <button type="submit" class="btn w-full bg-[var(--gray)] text-white p-3 rounded-lg hover:bg-[var(--gray-light)] transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-chart-pie"></i> Get Statistics
+                        </button>
+                    </form>
+                    <div id="countResult" class="mt-6"></div>
+                </div>
+
+                <div id="data" class="form-container p-6 rounded-xl animate-up delay-3">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">View All Data</h2>
+                        <span class="badge bg-[var(--info)] text-white">
+                            <i class="fas fa-database"></i> Database
+                        </span>
+                    </div>
+                    <form id="showAllForm" class="space-y-4">
+                        <button type="submit" class="btn w-full bg-[var(--primary)] text-white p-3 rounded-lg hover:bg-[var(--primary-light)] transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-list"></i> Show All Questions
+                        </button>
+                    </form>
+                    <div id="showAllResult" class="mt-6"></div>
+                </div>
+
+                <div id="teacher" class="form-container p-6 rounded-xl animate-up delay-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">View Teacher Data</h2>
+                        <span class="badge bg-[var(--success)] text-white">
+                            <i class="fas fa-user-tie"></i> Contributor
+                        </span>
+                    </div>
+                    <form id="teacherForm" class="space-y-4">
+                        <div>
+                            <label for="teacherName" class="form-label">Teacher Name:</label>
+                            <input type="text" id="teacherName" name="teacherName" placeholder="Exact teacher name" required aria-required="true" 
+                                class="w-full p-3 border border-[var(--light)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] bg-[var(--white)] text-[var(--text-color)]">
+                        </div>
+                        <button type="submit" class="btn w-full bg-[var(--info)] text-white p-3 rounded-lg hover:bg-[var(--info-dark)] transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-search"></i> Show Teacher Data
+                        </button>
+                    </form>
+                    <div id="teacherResult" class="mt-6"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="scrollTopBtn" class="floating-btn fixed bottom-8 right-8 w-16 h-16 flex items-center justify-center rounded-full text-2xl cursor-pointer hidden">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    <div id="toast" class="toast fixed bottom-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg opacity-0 transition-opacity duration-300">
+        <i class="fas fa-check-circle"></i>
+        <span class="toast-message">Success!</span>
+    </div>
+
+    <script>
+        // In-memory knowledge base
+        let knowledgeBase = JSON.parse(localStorage.getItem('knowledgeBase')) || {
+            "what is ai": { answers: ["Artificial Intelligence"], teacher: "Alamin" },
+            "what is ml": { answers: ["Machine Learning", "Deep Learning"], teacher: "alamin" },
+            "what is python": { answers: ["A programming language"], teacher: "Sanjida" }
+        };
+        let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
+        let cacheHits = 0, cacheMisses = 0, gistUpdates = 0;
+        let currentFormat = 'plain';
+        let contributionChart, distributionChart;
+
+        // GitHub Gist integration (Note: Token should be handled server-side in production)
+        const GITHUB_API = 'https://api.github.com';
+        const GIST_ID = '1e244da3fd8790812e008afa66d5bdfc';
+        const FILE_NAME = 'sara.json';
+
+        async function fetchGist() {
+            try {
+                const response = await fetch(`${GITHUB_API}/gists/${GIST_ID}`, {
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                });
+                if (!response.ok) throw new Error('Failed to fetch Gist');
+                const data = await response.json();
+                return JSON.parse(data.files[FILE_NAME].content);
+            } catch (err) {
+                console.error('Error fetching Gist:', err);
+                showToast('Failed to fetch Gist data', 'error');
+                return null;
+            }
+        }
+
+        async function updateGist(content) {
+            try {
+                const response = await fetch(`${GITHUB_API}/gists/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: { [FILE_NAME]: { content: JSON.stringify(content, null, 2) } }
+                    })
+                });
+                if (!response.ok) throw new Error('Failed to update Gist');
+                gistUpdates++;
+                showToast('Gist updated successfully');
+                return true;
+            } catch (err) {
+                console.error('Error updating Gist:', err);
+                showToast('Failed to update Gist', 'error');
+                return false;
+            }
+        }
+
+        // Save data to localStorage and Gist
+        async function saveData() {
+            localStorage.setItem('knowledgeBase', JSON.stringify(knowledgeBase));
+            localStorage.setItem('activityLog', JSON.stringify(activityLog));
+            await updateGist(knowledgeBase);
+            updateMonitoring();
+        }
+
+        // Normalize knowledge base
+        function normalizeKnowledgeBase(kb) {
+            const normalized = {};
+            for (const [question, data] of Object.entries(kb)) {
+                const lowerQuestion = question.toLowerCase().trim();
+                if (!normalized[lowerQuestion]) {
+                    normalized[lowerQuestion] = { answers: [], teacher: data.teacher };
+                }
+                normalized[lowerQuestion].answers = [...new Set([...normalized[lowerQuestion].answers, ...data.answers])];
+            }
+            return normalized;
+        }
+
+        // Fuzzy match
+        function fuzzyMatch(query, target) {
+            const result = fuzzy.filter(query, [target], { extract: str => str });
+            return result.length > 0 && result[0].score > 40;
+        }
+
+        // Simulated API routes
+        async function getText(query) {
+            const normalizedQuestion = query.toLowerCase().trim();
+            for (const [storedQuestion, data] of Object.entries(knowledgeBase)) {
+                if (fuzzyMatch(normalizedQuestion, storedQuestion)) {
+                    cacheHits++;
+                    const randomAnswer = data.answers[Math.floor(Math.random() * data.answers.length)];
+                    return { question: storedQuestion, answer: randomAnswer, teacher: data.teacher };
+                }
+            }
+            cacheMisses++;
+            throw new Error('No matching question found');
+        }
+
+        async function teachQA(qa, teacher) {
+            const [questionRaw, answersRaw] = qa.split(':').map(s => decodeURIComponent(s.trim()));
+            if (!questionRaw || !answersRaw) throw new Error('Invalid format');
+            const question = questionRaw.toLowerCase().trim();
+            const answers = answersRaw.split(',').map(a => a.trim()).filter(a => a);
+            if (!knowledgeBase[question]) {
+                knowledgeBase[question] = { answers: [], teacher };
+            }
+            for (const answer of answers) {
+                if (!knowledgeBase[question].answers.includes(answer)) {
+                    knowledgeBase[question].answers.push(answer);
+                }
+            }
+            await saveData();
+            return {
+                message: 'Learned!',
+                teacher,
+                question,
+                answers: knowledgeBase[question].answers
+            };
+        }
+
+        async function bulkTeach(questions, teacher) {
+            let addedCount = 0, skippedCount = 0;
+            for (const qa of questions) {
+                const { question, answers } = qa;
+                if (!question || !answers || !Array.isArray(answers) || answers.length === 0) {
+                    skippedCount++;
+                    continue;
+                }
+                const normalizedQuestion = question.toLowerCase().trim();
+                if (!knowledgeBase[normalizedQuestion]) {
+                    knowledgeBase[normalizedQuestion] = { answers: [], teacher };
+                }
+                for (const answer of answers) {
+                    if (!knowledgeBase[normalizedQuestion].answers.includes(answer)) {
+                        knowledgeBase[normalizedQuestion].answers.push(answer);
+                    }
+                }
+                addedCount++;
+            }
+            await saveData();
+            return { message: 'Bulk upload completed', teacher, addedQuestions: addedCount, skippedQuestions: skippedCount };
+        }
+
+        async function getCount(teacher) {
+            if (teacher) {
+                let questions = 0, answers = 0;
+                for (const [, data] of Object.entries(knowledgeBase)) {
+                    if (data.teacher.toLowerCase() === teacher.toLowerCase()) {
+                        questions++;
+                        answers += data.answers.length;
+                    }
+                }
+                if (questions === 0) throw new Error(`No questions found for teacher ${teacher}`);
+                return { teacher, questions, answers };
+            }
+            return {
+                totalQuestions: Object.keys(knowledgeBase).length,
+                totalAnswers: Object.values(knowledgeBase).reduce((sum, q) => sum + q.answers.length, 0)
+            };
+        }
+
+        async function deleteQA(qa) {
+            const [questionRaw, answerRaw] = qa.split(':').map(s => decodeURIComponent(s.trim()));
+            const question = questionRaw.toLowerCase().trim();
+            const answer = answerRaw.trim();
+            if (knowledgeBase[question]) {
+                knowledgeBase[question].answers = knowledgeBase[question].answers.filter(a => a !== answer);
+                if (knowledgeBase[question].answers.length === 0) {
+                    delete knowledgeBase[question];
+                }
+                await saveData();
+                return {
+                    message: 'Deleted successfully',
+                    question,
+                    remainingAnswers: knowledgeBase[question]?.answers || []
+                };
+            }
+            throw new Error('Question or answer not found');
+        }
+
+        async function getTeachers() {
+            const teachers = [...new Set(Object.values(knowledgeBase).map(v => v.teacher))];
+            return { count: teachers.length, teachers };
+        }
+
+        async function showAll() {
+            const questions = Object.entries(knowledgeBase).map(([question, data]) => ({
+                question,
+                answers: data.answers,
+                teacher: data.teacher
+            }));
+            return { count: questions.length, questions };
+        }
+
+        async function showTeacher(teacherName) {
+            const questions = Object.entries(knowledgeBase)
+                .filter(([, data]) => data.teacher.toLowerCase() === teacherName.toLowerCase())
+                .map(([question, data]) => ({ question, answers: data.answers, teacher: data.teacher }));
+            if (questions.length === 0) throw new Error(`No questions found for teacher ${teacherName}`);
+            return { teacher: teacherName, count: questions.length, questions };
+        }
+
+        async function getContributors() {
+            const contributors = {};
+            for (const [, data] of Object.entries(knowledgeBase)) {
+                const teacher = data.teacher;
+                if (!contributors[teacher]) {
+                    contributors[teacher] = { name: teacher, questions: 0, answers: 0 };
+                }
+                contributors[teacher].questions++;
+                contributors[teacher].answers += data.answers.length;
+            }
+            return { contributors: Object.values(contributors).sort((a, b) => b.answers - a.answers) };
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Fetch Gist data and merge with local storage
+            const gistData = await fetchGist();
+            if (gistData) {
+                knowledgeBase = { ...knowledgeBase, ...normalizeKnowledgeBase(gistData) };
+            }
+            knowledgeBase = normalizeKnowledgeBase(knowledgeBase);
+            await saveData();
+            fetchStats();
+            setupForms();
+            setupCharts();
+            setupAnimations();
+            setupThemeToggle();
+            setupSidebarToggle();
+
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
+            scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            window.addEventListener('scroll', () => {
+                scrollTopBtn.classList.toggle('hidden', window.scrollY <= 300);
+            });
+
+            setInterval(updateMonitoring, 5000);
+        });
+
+        // Theme Toggle
+        function setupThemeToggle() {
+            const toggle = document.getElementById('themeToggle');
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) {
+                document.body.dataset.theme = 'dark';
+                toggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            toggle.addEventListener('click', () => {
+                const isDark = document.body.dataset.theme === 'dark';
+                document.body.dataset.theme = isDark ? 'light' : 'dark';
+                toggle.innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+                localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                
+                // Update charts for theme change
+                if (contributionChart) {
+                    contributionChart.options.scales.x.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                    contributionChart.options.scales.y.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                    contributionChart.update();
+                }
+                if (distributionChart) {
+                    distributionChart.update();
+                }
+            });
+
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.dataset.theme = savedTheme;
+                toggle.innerHTML = savedTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            }
+        }
+
+        // Sidebar Toggle
+        function setupSidebarToggle() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.createElement('button');
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleBtn.className = 'lg:hidden fixed top-5 left-5 z-30 p-2 bg-[var(--primary)] text-white rounded-full shadow-lg hover:bg-[var(--primary-light)] transition-colors';
+            document.body.appendChild(toggleBtn);
+            
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+                gsap.from(sidebar, { 
+                    x: -250, 
+                    duration: 0.3, 
+                    ease: 'power3.out' 
+                });
+            });
+            
+            sidebar.addEventListener('click', (e) => {
+                if (window.innerWidth <= 1024 && e.target.tagName === 'A') {
+                    sidebar.classList.add('hidden');
+                }
+                
+                // Update active menu item
+                if (e.target.tagName === 'A') {
+                    document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                }
+            });
+            
+            window.addEventListener('resize', () => {
+                sidebar.classList.toggle('hidden', window.innerWidth <= 1024);
+            });
+            
+            // Highlight current section
+            window.addEventListener('scroll', debounce(() => {
+                const sections = document.querySelectorAll('section');
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - 100)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === `#${current}`) {
+                        item.classList.add('active');
+                    }
+                });
+            }, 100));
+        }
+
+        // GSAP Animations
+        function setupAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Header animation
+            gsap.from('.header-anim', {
+                y: -50,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            // Stat cards stagger animation
+            gsap.from('.stat-card', {
+                scrollTrigger: { trigger: '#dashboard', start: 'top 80%' },
+                y: 100,
+                opacity: 0,
+                stagger: 0.2,
+                duration: 0.8,
+                ease: 'power3.out'
+            });
+
+            // Form containers stagger animation
+            gsap.from('.form-container', {
+                scrollTrigger: { trigger: '.form-container', start: 'top 80%' },
+                scale: 0.8,
+                opacity: 0,
+                stagger: 0.3,
+                duration: 1,
+                ease: 'back.out(1.7)'
+            });
+
+            // Chart containers
+            gsap.from('.chart-container', {
+                scrollTrigger: { trigger: '#analytics', start: 'top 80%' },
+                x: -100,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            // Sidebar animation
+            gsap.from('.sidebar', {
+                x: -250,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            // Contributor cards
+            gsap.from('.contributor-card', {
+                scrollTrigger: { trigger: '#topContributors', start: 'top 80%' },
+                y: 50,
+                opacity: 0,
+                stagger: 0.2,
+                duration: 0.8,
+                ease: 'power3.out'
+            });
+
+            // Pulse animation for buttons
+            gsap.utils.toArray('.btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                    gsap.to(btn, { scale: 1.05, duration: 0.3, ease: 'power3.out' });
+                });
+                btn.addEventListener('mouseleave', () => {
+                    gsap.to(btn, { scale: 1, duration: 0.3, ease: 'power3.out' });
+                });
+            });
+        }
+
+        // Chart.js Setup
+        function setupCharts() {
+            const contributionCtx = document.getElementById('contributionChart').getContext('2d');
+            contributionChart = new Chart(contributionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        { 
+                            label: 'Questions', 
+                            data: [50, 75, 100, 120, 137, 160, 185, 210, 230, 250, 275, 300],
+                            borderColor: '#4361ee',
+                            backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        },
+                        { 
+                            label: 'Answers', 
+                            data: [150, 225, 300, 360, 391, 450, 520, 600, 670, 730, 800, 900],
+                            borderColor: '#4cc9f0',
+                            backgroundColor: 'rgba(76, 201, 240, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: 'var(--text-color)'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                color: 'var(--text-color)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                color: 'var(--text-color)'
+                            }
+                        }
+                    } 
+                }
+            });
+
+            const distributionCtx = document.getElementById('answerDistributionChart').getContext('2d');
+            distributionChart = new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Alamin', 'alamin', 'Sanjida', 'Others'],
+                    datasets: [{ 
+                        data: [324, 60, 5, 2], 
+                        backgroundColor: ['#4361ee', '#4cc9f0', '#f8961e', '#f72585'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: 'var(--text-color)'
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function updateChartTimeframe(timeframe) {
+            // This is a simplified example - in a real app you would fetch real data
+            let labels, questionsData, answersData;
+            
+            if (timeframe === 'week') {
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                questionsData = [20, 25, 30, 22, 28, 15, 10];
+                answersData = [60, 75, 90, 66, 84, 45, 30];
+            } else if (timeframe === 'month') {
+                labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                questionsData = [80, 95, 110, 120];
+                answersData = [240, 285, 330, 360];
+            } else { // year
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                questionsData = [50, 75, 100, 120, 137, 160, 185, 210, 230, 250, 275, 300];
+                answersData = [150, 225, 300, 360, 391, 450, 520, 600, 670, 730, 800, 900];
+            }
+            
+            contributionChart.data.labels = labels;
+            contributionChart.data.datasets[0].data = questionsData;
+            contributionChart.data.datasets[1].data = answersData;
+            contributionChart.update();
+            
+            // Update active button
+            document.querySelectorAll('#contributionChart button').forEach(btn => {
+                btn.classList.remove('bg-[var(--primary)]', 'text-white');
+                btn.classList.add('bg-[var(--light)]');
+            });
+            event.target.classList.add('bg-[var(--primary)]', 'text-white');
+            event.target.classList.remove('bg-[var(--light)]');
+        }
+
+        // Toggle format
+        function toggleFormat() {
+            const textarea = document.getElementById('bulkQuestions');
+            const input = textarea.value.trim();
+            if (!input) return showToast('No content to convert', 'error');
+
+            if (currentFormat === 'plain') {
+                const lines = input.split('\n').filter(line => line.trim());
+                const questions = [];
+                for (const line of lines) {
+                    const [question, answers] = line.split(':').map(part => part.trim());
+                    if (question && answers) {
+                        const answerList = answers.split(',').map(ans => ans.trim()).filter(ans => ans);
+                        if (answerList.length > 0) questions.push({ question, answers: answerList });
+                    }
+                }
+                if (questions.length > 0) {
+                    textarea.value = JSON.stringify(questions, null, 2);
+                    currentFormat = 'json';
+                    showToast('Converted to JSON format');
+                } else {
+                    showToast('Invalid format - use question:answer or question:ans1,ans2', 'error');
+                }
+            } else {
+                try {
+                    const data = JSON.parse(input);
+                    if (Array.isArray(data)) {
+                        let plainText = '';
+                        data.forEach(item => {
+                            if (item.question && item.answers) {
+                                const answers = Array.isArray(item.answers) ? item.answers.join(',') : item.answers;
+                                plainText += `${item.question}:${answers}\n`;
+                            }
+                        });
+                        textarea.value = plainText.trim();
+                        currentFormat = 'plain';
+                        showToast('Converted to plain text format');
+                    } else {
+                        showToast('Invalid JSON format - expected array of questions', 'error');
+                    }
+                } catch (e) {
+                    showToast('Invalid JSON format', 'error');
+                }
+            }
+        }
+
+        // Fetch stats
+        async function fetchStats() {
+            try {
+                const [countData, teachersData, contributorsData] = await Promise.all([
+                    getCount(),
+                    getTeachers(),
+                    getContributors()
+                ]);
+
+                animateValue('totalQuestions', 0, countData.totalQuestions, 1000);
+                animateValue('totalAnswers', 0, countData.totalAnswers, 1000);
+                animateValue('totalTeachers', 0, teachersData.count, 1000);
+                animateValue('knowledgeGrowth', 0, 13, 1000, '%');
+
+                updateChange('questionsChange', 8);
+                updateChange('answersChange', 12);
+                updateChange('teachersChange', 5);
+                updateChange('growthChange', 3);
+
+                const contributorsDiv = document.getElementById('topContributors');
+                contributorsDiv.innerHTML = contributorsData.contributors.slice(0, 5).map(c => `
+                    <div class="contributor-card p-6 rounded-xl text-center">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=${encodeURIComponent('#4361ee')}&color=fff&size=128" 
+                             alt="${c.name}" class="contributor-avatar mx-auto mb-3">
+                        <h4 class="text-lg font-semibold">${c.name}</h4>
+                        <p class="text-sm text-[var(--gray)]">${c.questions} questions</p>
+                        <p class="text-sm text-[var(--gray)]">${c.answers} answers</p>
+                        <div class="mt-3">
+                            <div class="h-2 w-full bg-[var(--light)] rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--success)]" 
+                                     style="width: ${Math.min(100, (c.answers / countData.totalAnswers) * 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading stats:', err);
+                showToast('Error loading statistics', 'error');
+            }
+        }
+
+        // Animate value
+        function animateValue(id, start, end, duration, suffix = '') {
+            const element = document.getElementById(id);
+            if (!element) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                element.textContent = Math.floor(progress * (end - start) + start) + suffix;
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Update change
+        function updateChange(id, change) {
+            const element = document.getElementById(id);
+            if (!element) return;
+            element.innerHTML = `<i class="fas fa-arrow-${change >= 0 ? 'up' : 'down'}"></i> ${Math.abs(change)}% <span>from last week</span>`;
+            element.className = `text-sm mt-2 flex items-center justify-center gap-1 ${change >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`;
+        }
+
+        // Show toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = toast.querySelector('.toast-message');
+            const toastIcon = toast.querySelector('i');
+            
+            toastMessage.textContent = message;
+            
+            // Set icon and color based on type
+            if (type === 'error') {
+                toast.style.backgroundColor = 'var(--danger)';
+                toastIcon.className = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                toast.style.backgroundColor = 'var(--warning)';
+                toastIcon.className = 'fas fa-exclamation-triangle';
+            } else {
+                toast.style.backgroundColor = 'var(--success)';
+                toastIcon.className = 'fas fa-check-circle';
+            }
+            
+            // Show toast
+            toast.className = 'toast fixed bottom-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg opacity-100 flex items-center gap-2';
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                toast.className = 'toast fixed bottom-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg opacity-0 flex items-center gap-2';
+            }, 3000);
+        }
+
+        // System monitoring
+        function updateMonitoring() {
+            const responseTime = Math.floor(Math.random() * 100) + 50;
+            document.getElementById('apiResponseTime').textContent = `${responseTime} ms`;
+            document.getElementById('apiResponseBar').style.width = `${Math.max(0, 100 - (responseTime / 2))}%`;
+            
+            const hitRate = cacheHits / (cacheHits + cacheMisses) * 100 || 0;
+            document.getElementById('cacheHitRate').textContent = `${hitRate.toFixed(1)}%`;
+            document.getElementById('cacheHitBar').style.width = `${hitRate}%`;
+            
+            document.getElementById('gistUpdateFreq').textContent = `${gistUpdates}/day`;
+            document.getElementById('updateFreqBar').style.width = `${Math.min(100, gistUpdates * 10)}%`;
+            
+            document.getElementById('systemUptime').textContent = '100%';
+            document.getElementById('uptimeBar').style.width = '100%';
+
+            const logTable = document.querySelector('#activityLog tbody');
+            logTable.innerHTML = activityLog.slice(0, 5).map(log => `
+                <tr class="activity-row">
+                    <td class="p-3">${log.action}</td>
+                    <td class="p-3">${log.user}</td>
+                    <td class="p-3">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td class="p-3 text-[var(--gray)]">${log.details || ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        function refreshActivityLog() {
+            updateMonitoring();
+            showToast('Activity log refreshed');
+        }
+
+        // Debounce
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), wait);
+            };
+        }
+
+        // Setup forms
+        function setupForms() {
+            // Ask Question
+            document.getElementById('askForm').addEventListener('submit', debounce(async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const resultDiv = document.getElementById('askResult');
+                const question = form.question.value.trim();
+                if (!question) return showToast('Please enter a question', 'error');
+
+                resultDiv.innerHTML = `
+                    <div class="p-6 rounded-xl bg-[var(--white)] shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <span>Processing your question...</span>
+                            <span class="spinner"></span>
+                        </div>
+                        <div class="text-sm text-[var(--gray)]">Searching knowledge base for answers</div>
+                    </div>
+                `;
+
+                try {
+                    const start = performance.now();
+                    const data = await getText(question);
+                    const end = performance.now();
+                    document.getElementById('apiResponseTime').textContent = `${Math.round(end - start)} ms`;
+                    document.getElementById('apiResponseBar').style.width = `${Math.max(0, 100 - ((end - start) / 2))}%`;
+
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Question: "${question}"</span>
+                                <span class="badge bg-[var(--primary)] text-white">
+                                    <i class="fas fa-check"></i> Found
+                                </span>
+                            </div>
+                            <div class="space-y-3">
+                                <p><strong class="text-[var(--primary)]">Answer:</strong> ${data.answer || 'No answer found'}</p>
+                                ${data.teacher ? `<p><strong class="text-[var(--primary)]">Teacher:</strong> ${data.teacher}</p>` : ''}
+                                <div class="text-sm text-[var(--gray)] mt-3">
+                                    <i class="fas fa-info-circle"></i> Response time: ${Math.round(end - start)}ms
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    activityLog.unshift({ 
+                        action: 'Asked Question', 
+                        user: 'Guest', 
+                        timestamp: Date.now(),
+                        details: `Question: "${question}"`
+                    });
+                    await saveData();
+                    gsap.from(resultDiv.children, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' });
+                } catch (err) {
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">No Answer Found</span>
+                                <span class="badge bg-[var(--danger)] text-white">
+                                    <i class="fas fa-times"></i> Not Found
+                                </span>
+                            </div>
+                            <p class="text-[var(--gray)]">Failed to get answer: ${err.message}</p>
+                            <div class="mt-3">
+                                <button class="text-sm text-[var(--primary)] hover:underline" onclick="document.getElementById('teach').scrollIntoView({behavior: 'smooth'})">
+                                    <i class="fas fa-book-open mr-1"></i> Teach me the answer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    showToast('Failed to get answer', 'error');
+                }
+            }, 300));
+
+            // Teach Answer
+            document.getElementById('teachForm').addEventListener('submit', debounce(async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const resultDiv = document.getElementById('teachResult');
+                const question = form.teachQuestion.value.trim();
+                const answer = form.teachAnswer.value.trim();
+                const teacher = form.teacher.value.trim();
+                if (!question || !answer || !teacher) return showToast('Please fill all fields', 'error');
+
+                resultDiv.innerHTML = `
+                    <div class="p-6 rounded-xl bg-[var(--white)] shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <span>Teaching new answer...</span>
+                            <span class="spinner"></span>
+                        </div>
+                        <div class="text-sm text-[var(--gray)]">Updating knowledge base</div>
+                    </div>
+                `;
+
+                try {
+                    const data = await teachQA(`${encodeURIComponent(question)}:${encodeURIComponent(answer)}`, teacher);
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Teaching Successful</span>
+                                <span class="badge bg-[var(--success)] text-white">
+                                    <i class="fas fa-check"></i> Success
+                                </span>
+                            </div>
+                            <div class="space-y-3">
+                                <p><strong class="text-[var(--primary)]">Question:</strong> ${data.question}</p>
+                                <p><strong class="text-[var(--primary)]">Answer(s):</strong> ${data.answers.join(', ')}</p>
+                                <p><strong class="text-[var(--primary)]">Teacher:</strong> ${data.teacher}</p>
+                                <div class="text-sm text-[var(--gray)] mt-3">
+                                    <i class="fas fa-info-circle"></i> The knowledge base has been updated
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    activityLog.unshift({ 
+                        action: 'Taught Answer', 
+                        user: teacher, 
+                        timestamp: Date.now(),
+                        details: `Question: "${question}"`
+                    });
+                    await saveData();
+                    fetchStats();
+                    showToast('Successfully taught new answer');
+                    gsap.from(resultDiv.children, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' });
+                    
+                    // Update charts
+                    if (contributionChart) {
+                        contributionChart.data.datasets[0].data[contributionChart.data.datasets[0].data.length - 1]++;
+                        contributionChart.data.datasets[1].data[contributionChart.data.datasets[1].data.length - 1] += data.answers.length;
+                        contributionChart.update();
+                    }
+                    
+                    if (distributionChart) {
+                        // Find or add teacher in distribution chart
+                        const teacherIndex = distributionChart.data.labels.findIndex(label => label.toLowerCase() === teacher.toLowerCase());
+                        if (teacherIndex >= 0) {
+                            distributionChart.data.datasets[0].data[teacherIndex] += data.answers.length;
+                        } else {
+                            distributionChart.data.labels.push(teacher);
+                            distributionChart.data.datasets[0].data.push(data.answers.length);
+                        }
+                        distributionChart.update();
+                    }
+                } catch (err) {
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Error</span>
+                                <span class="badge bg-[var(--danger)] text-white">
+                                    <i class="fas fa-times"></i> Error
+                                </span>
+                            </div>
+                            <p class="text-[var(--gray)]">Failed to teach answer: ${err.message}</p>
+                        </div>
+                    `;
+                    showToast('Failed to teach answer', 'error');
+                }
+            }, 300));
+
+            // Bulk Teach
+            document.getElementById('bulkForm').addEventListener('submit', debounce(async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const resultDiv = document.getElementById('bulkResult');
+                const bulkText = form.bulkQuestions.value.trim();
+                const teacher = form.bulkTeacher.value.trim();
+                if (!bulkText || !teacher) return showToast('Please fill all fields', 'error');
+
+                let questions;
+                try {
+                    try {
+                        questions = JSON.parse(bulkText);
+                    } catch {
+                        const lines = bulkText.split('\n').filter(line => line.trim());
+                        questions = [];
+                        for (const line of lines) {
+                            const [question, answers] = line.split(':').map(part => part.trim());
+                            if (question && answers) {
+                                const answerList = answers.split(',').map(ans => ans.trim()).filter(ans => ans);
+                                if (answerList.length > 0) questions.push({ question, answers: answerList });
+                            }
+                        }
+                        if (questions.length === 0) throw new Error('Invalid format');
+                    }
+
+                    resultDiv.innerHTML = `
+                        <div class="p-6 rounded-xl bg-[var(--white)] shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <span>Processing bulk upload...</span>
+                                <span class="spinner"></span>
+                            </div>
+                            <div class="text-sm text-[var(--gray)]">Adding ${questions.length} questions to knowledge base</div>
+                        </div>
+                    `;
+
+                    const data = await bulkTeach(questions, teacher);
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Bulk Teach Results</span>
+                                <span class="badge bg-[var(--success)] text-white">
+                                    <i class="fas fa-check"></i> Success
+                                </span>
+                            </div>
+                            <div class="space-y-3">
+                                <p><strong class="text-[var(--primary)]">Added Questions:</strong> ${data.addedQuestions}</p>
+                                <p><strong class="text-[var(--primary)]">Skipped Questions:</strong> ${data.skippedQuestions}</p>
+                                <p><strong class="text-[var(--primary)]">Teacher:</strong> ${data.teacher}</p>
+                                <div class="text-sm text-[var(--gray)] mt-3">
+                                    <i class="fas fa-info-circle"></i> The knowledge base has been updated with ${data.addedQuestions} new questions
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    activityLog.unshift({ 
+                        action: 'Bulk Teach', 
+                        user: teacher, 
+                        timestamp: Date.now(),
+                        details: `Added ${data.addedQuestions} questions`
+                    });
+                    await saveData();
+                    fetchStats();
+                    showToast(`Successfully added ${data.addedQuestions} questions`);
+                    gsap.from(resultDiv.children, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' });
+                    
+                    // Update charts
+                    if (contributionChart) {
+                        contributionChart.data.datasets[0].data[contributionChart.data.datasets[0].data.length - 1] += data.addedQuestions;
+                        const totalAnswers = questions.reduce((sum, q) => sum + q.answers.length, 0);
+                        contributionChart.data.datasets[1].data[contributionChart.data.datasets[1].data.length - 1] += totalAnswers;
+                        contributionChart.update();
+                    }
+                } catch (err) {
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Error</span>
+                                <span class="badge bg-[var(--danger)] text-white">
+                                    <i class="fas fa-times"></i> Error
+                                </span>
+                            </div>
+                            <p class="text-[var(--gray)]">Failed to bulk teach: ${err.message}</p>
+                        </div>
+                    `;
+                    showToast('Failed to bulk teach', 'error');
+                }
+            }, 300));
+
+            // Delete Answer
+            document.getElementById('deleteForm').addEventListener('submit', debounce(async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const resultDiv = document.getElementById('deleteResult');
+                const question = form.delQuestion.value.trim();
+                const answer = form.delAnswer.value.trim();
+                if (!question || !answer) return showToast('Please fill all fields', 'error');
+
+                resultDiv.innerHTML = `
+                    <div class="p-6 rounded-xl bg-[var(--white)] shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <span>Deleting answer...</span>
+                            <span class="spinner"></span>
+                        </div>
+                        <div class="text-sm text-[var(--gray)]">Updating knowledge base</div>
+                    </div>
+                `;
+
+                try {
+                    const data = await deleteQA(`${encodeURIComponent(question)}:${encodeURIComponent(answer)}`);
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Delete Result</span>
+                                <span class="badge bg-${data.message.includes('Deleted') ? '[var(--success)]' : '[var(--warning)]'} text-white">
+                                    <i class="fas fa-${data.message.includes('Deleted') ? 'check' : 'exclamation'}"></i> ${data.message.includes('Deleted') ? 'Success' : 'Not Found'}
+                                </span>
+                            </div>
+                            <div class="space-y-3">
+                                <p><strong class="text-[var(--primary)]">Question:</strong> ${data.question}</p>
+                                <p><strong class="text-[var(--primary)]">Remaining Answers:</strong> ${data.remainingAnswers.join(', ') || 'None'}</p>
+                                <div class="text-sm text-[var(--gray)] mt-3">
+                                    <i class="fas fa-info-circle"></i> ${data.message}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    activityLog.unshift({ 
+                        action: 'Deleted Answer', 
+                        user: 'Admin', 
+                        timestamp: Date.now(),
+                        details: `Question: "${question}"`
+                    });
+                    await saveData();
+                    fetchStats();
+                    showToast(data.message.includes('Deleted') ? 'Successfully deleted answer' : 'Answer not found', data.message.includes('Deleted') ? 'success' : 'warning');
+                    gsap.from(resultDiv.children, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' });
+                } catch (err) {
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Error</span>
+                                <span class="badge bg-[var(--danger)] text-white">
+                                    <i class="fas fa-times"></i> Error
+                                </span>
+                            </div>
+                            <p class="text-[var(--gray)]">Failed to delete answer: ${err.message}</p>
+                        </div>
+                    `;
+                    showToast('Failed to delete answer', 'error');
+                }
+            }, 300));
+
+            // View Statistics
+            document.getElementById('countForm').addEventListener('submit', debounce(async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const resultDiv = document.getElementById('countResult');
+                const teacher = form.countTeacher.value.trim();
+
+                resultDiv.innerHTML = `
+                    <div class="p-6 rounded-xl bg-[var(--white)] shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <span>Fetching statistics...</span>
+                            <span class="spinner"></span>
+                        </div>
+                        <div class="text-sm text-[var(--gray)]">Analyzing knowledge base</div>
+                    </div>
+                `;
+
+                try {
+                    const data = await getCount(teacher);
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Database Statistics</span>
+                                <span class="badge bg-[var(--info)] text-white">
+                                    <i class="fas fa-chart-bar"></i> Stats
+                                </span>
+                            </div>
+                            <div class="space-y-3">
+                                ${teacher ? `
+                                    <p><strong class="text-[var(--primary)]">Teacher:</strong> ${data.teacher}</p>
+                                    <p><strong class="text-[var(--primary)]">Questions:</strong> ${data.questions}</p>
+                                    <p><strong class="text-[var(--primary)]">Answers:</strong> ${data.answers}</p>
+                                    <div class="mt-3">
+                                        <div class="h-2 w-full bg-[var(--light)] rounded-full overflow-hidden">
+                                            <div class="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--success)]" 
+                                                 style="width: ${Math.min(100, (data.questions / Object.keys(knowledgeBase).length) * 100)}%"></div>
+                                        </div>
+                                        <div class="text-xs text-[var(--gray)] mt-1">${((data.questions / Object.keys(knowledgeBase).length) * 100).toFixed(1)}% of all questions</div>
+                                    </div>
+                                ` : `
+                                    <p><strong class="text-[var(--primary)]">Total Questions:</strong> ${data.totalQuestions}</p>
+                                    <p><strong class="text-[var(--primary)]">Total Answers:</strong> ${data.totalAnswers}</p>
+                                    <p><strong class="text-[var(--primary)]">Average Answers per Question:</strong> ${(data.totalAnswers / data.totalQuestions).toFixed(1)}</p>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                    activityLog.unshift({ 
+                        action: 'Viewed Statistics', 
+                        user: teacher || 'Guest', 
+                        timestamp: Date.now(),
+                        details: teacher ? `Teacher: ${teacher}` : 'All statistics'
+                    });
+                    await saveData();
+                    gsap.from(resultDiv.children, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' });
+                } catch (err) {
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Error</span>
+                                <span class="badge bg-[var(--danger)] text-white">
+                                    <i class="fas fa-times"></i> Error
+                                </span>
+                            </div>
+                            <p class="text-[var(--gray)]">Failed to fetch statistics: ${err.message}</p>
+                        </div>
+                    `;
+                    showToast('Failed to fetch statistics', 'error');
+                }
+            }, 300));
+
+            // View All Data
+            document.getElementById('showAllForm').addEventListener('submit', debounce(async (e) => {
+                e.preventDefault();
+                const resultDiv = document.getElementById('showAllResult');
+
+                resultDiv.innerHTML = `
+                    <div class="p-6 rounded-xl bg-[var(--white)] shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <span>Fetching all data...</span>
+                            <span class="spinner"></span>
+                        </div>
+                        <div class="text-sm text-[var(--gray)]">Loading knowledge base</div>
+                    </div>
+                `;
+
+                try {
+                    const data = await showAll();
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">All Questions (${data.count})</span>
+                                <span class="badge bg-[var(--info)] text-white">
+                                    <i class="fas fa-database"></i> Data
+                                </span>
+                            </div>
+                            <div class="overflow-y-auto max-h-[500px] pr-2">
+                                <div class="space-y-4">
+                                    ${data.questions.map((q, index) => `
+                                        <div class="border-b border-[var(--light)] border-opacity-20 pb-4 ${index === 0 ? 'pt-0' : 'pt-4'}">
+                                            <div class="flex justify-between items-start">
+                                                <p class="font-medium">${q.question}</p>
+                                                <span class="text-xs bg-[var(--light)] text-[var(--gray)] px-2 py-1 rounded-full">${q.answers.length} ${q.answers.length === 1 ? 'answer' : 'answers'}</span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <p class="text-sm text-[var(--gray)]"><strong>Answers:</strong> ${q.answers.join(', ')}</p>
+                                                <p class="text-xs text-[var(--gray)] mt-1"><strong>Teacher:</strong> ${q.teacher}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="mt-4 text-sm text-[var(--gray)]">
+                                <i class="fas fa-info-circle"></i> Showing all ${data.count} questions in the knowledge base
+                            </div>
+                        </div>
+                    `;
+                    activityLog.unshift({ 
+                        action: 'Viewed All Data', 
+                        user: 'Guest', 
+                        timestamp: Date.now(),
+                        details: `Viewed ${data.count} questions`
+                    });
+                    await saveData();
+                    gsap.from(resultDiv.children, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' });
+                } catch (err) {
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Error</span>
+                                <span class="badge bg-[var(--danger)] text-white">
+                                    <i class="fas fa-times"></i> Error
+                                </span>
+                            </div>
+                            <p class="text-[var(--gray)]">Failed to fetch data: ${err.message}</p>
+                        </div>
+                    `;
+                    showToast('Failed to fetch data', 'error');
+                }
+            }, 300));
+
+            // View Teacher Data
+            document.getElementById('teacherForm').addEventListener('submit', debounce(async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const resultDiv = document.getElementById('teacherResult');
+                const teacher = form.teacherName.value.trim();
+                if (!teacher) return showToast('Please enter a teacher name', 'error');
+
+                resultDiv.innerHTML = `
+                    <div class="p-6 rounded-xl bg-[var(--white)] shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <span>Fetching teacher data...</span>
+                            <span class="spinner"></span>
+                        </div>
+                        <div class="text-sm text-[var(--gray)]">Searching for contributions</div>
+                    </div>
+                `;
+
+                try {
+                    const data = await showTeacher(teacher);
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Teacher: ${data.teacher}</span>
+                                <span class="badge bg-[var(--success)] text-white">
+                                    <i class="fas fa-user-tie"></i> ${data.count} Questions
+                                </span>
+                            </div>
+                            <div class="mb-4">
+                                <div class="flex items-center gap-4">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.teacher)}&background=${encodeURIComponent('#4361ee')}&color=fff&size=128" 
+                                         alt="${data.teacher}" class="w-16 h-16 rounded-full">
+                                    <div>
+                                        <h4 class="font-medium">${data.teacher}</h4>
+                                        <p class="text-sm text-[var(--gray)]">${data.count} questions</p>
+                                        <p class="text-sm text-[var(--gray)]">
+                                            ${data.questions.reduce((sum, q) => sum + q.answers.length, 0)} answers
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="overflow-y-auto max-h-[400px] pr-2">
+                                <div class="space-y-4">
+                                    ${data.questions.map((q, index) => `
+                                        <div class="border-b border-[var(--light)] border-opacity-20 pb-4 ${index === 0 ? 'pt-0' : 'pt-4'}">
+                                            <p class="font-medium">${q.question}</p>
+                                            <div class="mt-2">
+                                                <p class="text-sm text-[var(--gray)]"><strong>Answers:</strong> ${q.answers.join(', ')}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="mt-4 text-sm text-[var(--gray)]">
+                                <i class="fas fa-info-circle"></i> Showing all ${data.count} questions by ${data.teacher}
+                            </div>
+                        </div>
+                    `;
+                    activityLog.unshift({ 
+                        action: `Viewed Teacher Data`, 
+                        user: teacher, 
+                        timestamp: Date.now(),
+                        details: `Teacher: ${teacher} (${data.count} questions)`
+                    });
+                    await saveData();
+                    gsap.from(resultDiv.children, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' });
+                } catch (err) {
+                    resultDiv.innerHTML = `
+                        <div class="result-container p-6 rounded-xl animate__animated animate__fadeIn">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Error</span>
+                                <span class="badge bg-[var(--danger)] text-white">
+                                    <i class="fas fa-times"></i> Error
+                                </span>
+                            </div>
+                            <p class="text-[var(--gray)]">Failed to fetch teacher data: ${err.message}</p>
+                        </div>
+                    `;
+                    showToast('Failed to fetch teacher data', 'error');
+                }
+            }, 300));
+        }
+    </script>
+</body>
+</html>
