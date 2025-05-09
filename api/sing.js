@@ -22,7 +22,8 @@ async function fetchFastVideoInfo(videoUrl, res) {
       '--geo-bypass-country=BD',
       '--no-warnings',
       '--ignore-errors',
-      '--quiet'
+      '--quiet',
+      '--cookies', 'cookies.txt'
     ]);
 
     console.timeEnd('VideoInfoFetch');
